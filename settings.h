@@ -35,16 +35,26 @@ int     AWAKE_TIME = 5;                    // how many seconds to stay 'awake' b
 #define STMPE_CS 16
 // #define STMPE_IRQ 4 // pas utilisé
 
+String OPEN_WEATHER_MAP_LANGUAGE = "fr";
+const uint8_t MAX_FORECASTS = 10;
+const String WDAY_NAMES[] = {"Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"};
+const String MONTH_NAMES[] = {"Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"};
+const String SUN_MOON_TEXT[] = {"Sun", "Rise", "Set", "Moon", "Age", "Illum"};
+const String MOON_PHASES[] = {"New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
+                              "Full Moon", "Waning Gibbous", "Third quarter", "Waning Crescent"};
 // TimeClient settings
-const float UTC_OFFSET = 1;// 2 en ete, 1 en hiver
+// const float UTC_OFFSET = 1;// 2 en ete, 1 en hiver
+#define UTC_OFFSET +1
+struct dstRule StartRule	= {"CEST", Last, Sun, Mar, 2, 3600}; // Central European Summer Time = UTC/GMT +2 hours
+struct dstRule EndRule		= {"CET" , Last, Sun, Oct, 2, 0};    // Central European Time = UTC/GMT +1 hour
 
 // Wunderground Settings 2x API_KEY pour limiter le nbr de connexions journalieres
 // WUNDERGRROUND_API_KEY[0] pour Bompas et Epinal
 // WUNDERGRROUND_API_KEY[1] pour Hagetmau
 const boolean IS_METRIC = true;
-const String WUNDERGRROUND_API_KEY[2]  = {"895400f07e245903","6918f1cfa03b73fa"};
-const String WUNDERGRROUND_LANGUAGE = "FR";
-const String WUNDERGROUND_COUNTRY   = "FR";
+// const String WUNDERGRROUND_API_KEY[2]  = {"895400f07e245903","6918f1cfa03b73fa"};
+// const String WUNDERGRROUND_LANGUAGE = "FR";
+// const String WUNDERGROUND_COUNTRY   = "FR";
 // const String WUNDERGROUND_CITY      = "Hagetmau"; 
 // String WUNDERGROUND_CITY      = "zmw:00000.122.07747"; // Bompas 66
 

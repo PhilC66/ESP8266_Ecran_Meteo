@@ -88,6 +88,9 @@ V18 06/11/2017 changement heure dans settings
 #include <ESP8266httpUpdate.h>    	// Update Over The Air
 #include "settings.h"								// check settings.h for adapting to your needs
 #include <JsonListener.h>
+#include <OpenWeatherMapCurrent.h>
+#include <OpenWeatherMapForecast.h>
+#include <Astronomy.h>
 #include <WundergroundClient.h>			// recuperation info Wunderground
 #include "TimeClient.h"							// gestion date heure NTP
 // #include <RemoteDebug.h>						// Telnet
@@ -104,14 +107,14 @@ struct config_t								// configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 16;
+const int 	 ver  = 100;
 const byte nbrVille	= 6;
 String ville[nbrVille][nbrVille] ={
-	{"          ","hagetmau","zmw:00000.122.07747","epinal","mirecourt","perpignan"},
-	{"          ","Hagetmau","Bompas","Epinal","Mirecourt","Perpignan"}
-};// 0 nom wunderground, 1 alias
+	{"          ","3014084" ,"3031848","2987914"  ,"3020035","2993728"},
+	{"          ","Hagetmau","Bompas" ,"Perpignan","Epinal" ,"Mirecourt"}
+};// 0 Weathermap ID , 1 Nom Ville
 	
-String WUNDERGROUND_CITY;
+// String WUNDERGROUND_CITY;
 
 float  TensionBatterie; // batterie de l'ecran
 String texte;// texte passé pour suppression des car speciaux
@@ -167,16 +170,20 @@ GfxUi ui = GfxUi(&tft);
 Adafruit_STMPE610 spitouch = Adafruit_STMPE610(STMPE_CS);
 
 // WebResource webResource;
-TimeClient timeClient(UTC_OFFSET);
+// TimeClient timeClient(UTC_OFFSET);
 
 // Set to false, if you prefere imperial/inches, Fahrenheit
-WundergroundClient wunderground(IS_METRIC);
+// WundergroundClient wunderground(IS_METRIC);
+
+
+OpenWeatherMapCurrentData currentWeather;
+OpenWeatherMapForecastData forecasts[MAX_FORECASTS];
+simpleDSTadjust dstAdjusted(StartRule, EndRule);
+Astronomy::MoonData moonData;
 
 //declaring prototypes
 void configModeCallback (WiFiManager *myWiFiManager);
-// void downloadCallback(String filename, int16_t bytesDownloaded, int16_t bytesTotal);
-// ProgressCallback _downloadCallback = downloadCallback;
-// void downloadResources();
+
 void updateData();
 void drawProgress(uint8_t percentage, String text);
 void drawTime();
@@ -185,8 +192,14 @@ void drawForecast(byte frcst);
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex);
 String getMeteoconIcon(String iconText);
 void drawAstronomy();
-void drawSeparator(uint16_t y);
-// void sleepNow(int wakeup);
+void drawCurrentWeatherDetail();
+// void drawLabelValue(uint8_t line, String label, String value);
+// void drawForecastTable(uint8_t start);
+String getTime(time_t *timestamp);
+const char* getMeteoconIconFromProgmem(String iconText);
+const char* getMiniMeteoconIconFromProgmem(String iconText);
+																			// void drawSeparator(uint16_t y);
+																			// void sleepNow(int wakeup);
 void MesureBatterie();
 void GereEcran();
 void draw_ecran(byte i);
@@ -227,23 +240,9 @@ void setup() {
 		Serial.print(F("Nouvelle ville : ")),Serial.println(ville[1][config.city]);
 	}
 	
-	WUNDERGROUND_CITY = ville[0][config.city];
-	Serial.println(WUNDERGROUND_CITY);
+	// WUNDERGROUND_CITY = ville[0][config.city];
+	// Serial.println(WUNDERGROUND_CITY);
 
-  // if using deep sleep, we can use the STMPE's IRQ pin to wake us up
-  /* if (DEEP_SLEEP) {
-    // this pin (#2) is connected to the STMPE IRQ pin
-    pinMode(STMPE_IRQ, INPUT_PULLUP); 
-    // tell the STMPE to use 'low' level as 'touched' indicator
-    spitouch.writeRegister8(STMPE_INT_CTRL, STMPE_INT_CTRL_POL_LOW | STMPE_INT_CTRL_ENABLE);
-  } */
-  
-/*   // we'll use STMPE's GPIO 2 for backlight control
-  spitouch.writeRegister8(STMPE_GPIO_DIR, _BV(2));
-  spitouch.writeRegister8(STMPE_GPIO_ALT_FUNCT, _BV(2));
-  // backlight on
-  spitouch.writeRegister8(STMPE_GPIO_SET_PIN, _BV(2));
-    */
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
@@ -259,7 +258,7 @@ void setup() {
   wifiManager.autoConnect();
 
   //Manual Wifi
-  //WiFi.begin(WIFI_SSID, WIFI_PWD);
+  //WiFi.begin(mySSID, myPASSWORD);
 
   // OTA Setup
   String hostname(HOSTNAME);
@@ -273,9 +272,6 @@ void setup() {
   
   //Uncomment if you want to update all internet resources
   //SPIFFS.format();
-
-  // download images from the net. If images already exist don't download
-  // downloadResources();// pas necessaire si deja chargée en SPIFFS
 
   updateTime();
 	updateData();	  // load the weather information
@@ -398,43 +394,6 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 	ui.drawString(120, 84, "192.168.4.1");
 }
 //--------------------------------------------------------------------------------//
-// callback called during download of files. Updates progress bar
-/* void downloadCallback(String filename, int16_t bytesDownloaded, int16_t bytesTotal) {
-  Serial.println(String(bytesDownloaded) + " / " + String(bytesTotal));
-
-  int percentage = 100 * bytesDownloaded / bytesTotal;
-  if (percentage == 0) {
-    ui.drawString(120, 160, filename);
-  }
-  if (percentage % 5 == 0) {
-    ui.setTextAlignment(CENTER);
-    ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-    // ui.drawString(120, 160, String(percentage) + "%");
-    ui.drawProgressBar(10, 165, 240 - 20, 15, percentage, ILI9341_WHITE, ILI9341_BLUE);
-  }
-} */
-//--------------------------------------------------------------------------------//
-// Download the bitmaps
-/* void downloadResources() {
-  tft.fillScreen(ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);
-  char id[5];
-  for (int i = 0; i < 19; i++) { //i < 21
-    sprintf(id, "%02d", i);
-    tft.fillRect(0, 120, 240, 40, ILI9341_BLACK);
-    webResource.downloadFile("http://www.squix.org/blog/wunderground/" + wundergroundIcons[i] + extBmp, wundergroundIcons[i] + extBmp, _downloadCallback);
-  }
-  for (int i = 0; i < 19; i++) { // i < 21
-    sprintf(id, "%02d", i);
-    tft.fillRect(0, 120, 240, 40, ILI9341_BLACK);
-    webResource.downloadFile("http://www.squix.org/blog/wunderground/mini/" + wundergroundIcons[i] + extBmp, "/mini/" + wundergroundIcons[i] + extBmp, _downloadCallback);
-  }
-  for (int i = 0; i < 24; i++) {// modif 20/08/2017 23 -> 24
-    tft.fillRect(0, 120, 240, 40, ILI9341_BLACK);
-    webResource.downloadFile("http://www.squix.org/blog/moonphase_L" + String(i) + extBmp, "/moon" + String(i) + extBmp, _downloadCallback);
-  }
-} */
-//--------------------------------------------------------------------------------//
 void draw_ecran0(){// ecran principal
 	tft.fillScreen(ILI9341_BLACK);
   drawTime();
@@ -461,19 +420,60 @@ void updateTime(){
 void updateData() {
 	
 	byte API_KEY_Nbr;// selection API_KEY selon ville
-	if(config.city == 1){
+	if(config.city == 0){
 		API_KEY_Nbr = 0;
 	}
-	else{
+	else if(config.city == 1 || config.city == 2){
 		API_KEY_Nbr = 1;
+	}
+	else if(config.city == 3 || config.city == 4){
+		API_KEY_Nbr = 2;
 	}
 	
   tft.fillScreen(ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
+
+	drawProgress(10, "Maj Heure");
+  configTime(UTC_OFFSET * 3600, 0, NTP_SERVERS);
+  while(!time(nullptr)) {
+    Serial.print("#");
+    delay(100);
+  }
+  // calculate for time calculation how much the dst class adds.
+  dstOffset = UTC_OFFSET * 3600 + dstAdjusted.time(nullptr) - time(nullptr);
+  Serial.printf("Time difference for DST: %d\n", dstOffset);
 	
-	drawProgress(40, "Maj MaMeteo...");
-			
   drawProgress(50, "Maj actuelle...");
+  OpenWeatherMapCurrent *currentWeatherClient = new OpenWeatherMapCurrent();
+  currentWeatherClient->setMetric(IS_METRIC);
+  currentWeatherClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+  currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],Ville[0][config.city]);
+  delete currentWeatherClient;
+  currentWeatherClient = nullptr;
+
+  drawProgress(70, "Maj previsions...");
+  OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
+  forecastClient->setMetric(IS_METRIC);
+  forecastClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+  uint8_t allowedHours[] = {12, 0};
+  forecastClient->setAllowedHours(allowedHours, sizeof(allowedHours));
+  forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],Ville[0][config.city], MAX_FORECASTS);
+  delete forecastClient;
+  forecastClient = nullptr;
+
+  drawProgress(80, "Maj astronomie...");
+  Astronomy *astronomy = new Astronomy();
+  moonData = astronomy->calculateMoonData(time(nullptr));
+  float lunarMonth = 29.53;
+  moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
+  moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
+  delete astronomy;
+  astronomy = nullptr;
+  delay(1000);	
+	
+/* 	drawProgress(40, "Maj MaMeteo...");
+			
+  drawProgress(50, "c");
   wunderground.updateConditions(WUNDERGRROUND_API_KEY[API_KEY_Nbr] , WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
   drawProgress(60, "Maj previsions...");
   wunderground.updateForecast(WUNDERGRROUND_API_KEY[API_KEY_Nbr], WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
@@ -483,11 +483,11 @@ void updateData() {
   // V20 wunderground.updateAlerts(WUNDERGRROUND_API_KEY, WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
   drawProgress(100, "Fin...");
   delay(100);
-	draw_ecran(0);
+	draw_ecran(0); */
 	
-	Serial.print(F("Vent = ")),Serial.println(wunderground.getWindSpeed());
-	Serial.print(F("gust = ")),Serial.println(wunderground.getWindGust());
-	Serial.print(F("Dir = ")) ,Serial.println(wunderground.getWindDir());
+	// Serial.print(F("Vent = ")),Serial.println(wunderground.getWindSpeed());
+	// Serial.print(F("gust = ")),Serial.println(wunderground.getWindGust());
+	// Serial.print(F("Dir = ")) ,Serial.println(wunderground.getWindDir());
 	// debug.print(F("Vent = ")),debug.println(wunderground.getWindSpeed());
 	// debug.print(F("gust = ")),debug.println(wunderground.getWindGust());
 	// debug.print(F("Dir = ")) ,debug.println(wunderground.getWindDir());	
@@ -735,12 +735,12 @@ String getMeteoconIcon(String iconText) {
 	 */
 }
 //--------------------------------------------------------------------------------//
-void drawSeparator(uint16_t y) {
+/* void drawSeparator(uint16_t y) {
 	// if you want separators, uncomment the tft-line
 	
   // tft.drawFastHLine(10, y, 240 - 2 * 10, 0x4228);
 	tft.drawFastHLine(0, y, 200, ILI9341_RED);
-}
+} */
 //--------------------------------------------------------------------------------//
 String madate(){
 	String date = wunderground.getDate();
@@ -803,23 +803,23 @@ void RemplaceCharSpec(){
 boolean JourNuit(){ 
 	// determine si jour ou nuit
 	// Jour = true, Nuit=false
-	int Heureactuelle = (timeClient.getHours().toInt())*60;// calcul en 4 lignes sinon bug!
-	Heureactuelle += timeClient.getMinutes().toInt();
-	Heureactuelle  = Heureactuelle*60; // en minutes
 	
-	int Sunrise = (wunderground.getSunriseTime().substring(0,2).toInt())*60;
-	Sunrise += wunderground.getSunriseTime().substring(3,5).toInt();
-	Sunrise = Sunrise *60;
-	Sunrise -= 3600;
+	char *dstAbbrev;
+	time_t now = dstAdjusted.time(&dstAbbrev);
+	struct tm * timeinfo = localtime (&now);
+	time_t timesunrise = currentWeather.sunrise + dstOffset;
+	time_t timesunset  = currentWeather.sunset  + dstOffset;
+	// Serial.println(now);
+	// Serial.println(timesunrise);
+	// Serial.printf("%02d:%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+	// Serial.print(" Sun rise : "),Serial.println(getTime(&timesunrise));
 	
-	int Sunset = (wunderground.getSunsetTime().substring(0,2).toInt())*60;
-	Sunset += wunderground.getSunsetTime().substring(3,5).toInt();
-	Sunset = Sunset *60;
-	Sunset += 3600;
+	timesunrise -= 3600;	// marge 1 heure
+	timesunset  += 3600;
 	
-	if(Sunset > Sunrise){
-		if((Heureactuelle > Sunset && Heureactuelle > Sunrise)
-		 ||(Heureactuelle < Sunset && Heureactuelle < Sunrise)){
+	if(timesunset > timesunrise){
+		if((now > timesunset && now > timesunrise)
+		 ||(now < timesunset && now < timesunrise)){
 			// Nuit
 			return false;
 		}
@@ -828,7 +828,7 @@ boolean JourNuit(){
 		}
 	}
 	else{
-		if(Heureactuelle > Sunset && Heureactuelle < Sunrise){
+		if(now > timesunset && now < timesunrise){
 		 // Nuit
 			return false;
 		}
@@ -1222,7 +1222,7 @@ void draw_ecran41(byte zzone){// partie basse ecran 4
 		
 		if(numlign + 1 <= nbrVille && numlign + 1 != config.city && numlign + 1 !=0){
 			config.city = numlign + 1; // nouvelle ville
-			WUNDERGROUND_CITY = ville[0][config.city];
+			// WUNDERGROUND_CITY = ville[0][config.city];
 			// EcrireEEPROM(0);
 			EEPROM.put(0,config);
 			EEPROM.commit();
@@ -1487,3 +1487,12 @@ void MajSoft() {
 	Serial.print(ville[1][config.city]);
 	Serial.print(F("longEEPROM=")),Serial.println(longueur);
 } */
+//--------------------------------------------------------------------------------//
+String getTime(time_t *timestamp) {
+  // struct tm *timeInfo = gmtime(timestamp);
+	struct tm *timeInfo = localtime(timestamp);
+  
+  char buf[6];
+  sprintf(buf, "%02d:%02d", timeInfo->tm_hour, timeInfo->tm_min);
+  return String(buf);
+}
