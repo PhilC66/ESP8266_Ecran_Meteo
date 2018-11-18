@@ -7,7 +7,8 @@ ESP8266 Weather Station in Color using ILI9341 TFT 240x320 display
 This code is made for an 240x320 65K ILI9341 display with code running on an ESP8266.
 You can buy such a display here: 
 
-[http://www.banggood.com/2_2-Inch-Serial-TFT-SPI-Screen-p-912854.html](http://www.banggood.com/2_2-Inch-Serial-TFT-SPI-LCD-Screen-Module-HD-240-x-320-5110-Compatible-p-912854.html?p=6R31122484684201508S)
+https://www.adafruit.com/product/3315
+https://www.adafruit.com/product/2821
 
 ## Software Requirements/ Libraries
 
@@ -24,12 +25,13 @@ You also need to get an API key for the Wunderground data: https://www.wundergro
 | ILI9341       | NodeMCU      |
 | ------------- |:-------------:| 
 | MISO          | -             | 
-| LED           | 3V3           | 
+| LED Backlight | 4	            | 
 | SCK           | D5            | 
 | MOSI          | D7            |
-| DC/RS         | D4            |
+| DC/RS         | 15            |
 | RESET         | RST           |
-| CS            | D2            |
+| CS            | 0             |
 | GND           | GND           |
 | VCC           | 3V3           |
+| STMPE_CS      | 16            |
 

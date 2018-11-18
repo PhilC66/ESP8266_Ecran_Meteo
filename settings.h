@@ -33,7 +33,7 @@ int     AWAKE_TIME = 5;                    // how many seconds to stay 'awake' b
 
 // pins for the touchscreen
 #define STMPE_CS 16
-#define STMPE_IRQ 4
+// #define STMPE_IRQ 4 // pas utilisé
 
 // TimeClient settings
 const float UTC_OFFSET = 1;// 2 en ete, 1 en hiver
