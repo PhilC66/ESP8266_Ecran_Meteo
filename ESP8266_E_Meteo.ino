@@ -91,8 +91,8 @@ V18 06/11/2017 changement heure dans settings
 #include <OpenWeatherMapCurrent.h>
 #include <OpenWeatherMapForecast.h>
 #include <Astronomy.h>
-#include <WundergroundClient.h>			// recuperation info Wunderground
-#include "TimeClient.h"							// gestion date heure NTP
+// #include <WundergroundClient.h>			// recuperation info Wunderground
+// #include "TimeClient.h"							// gestion date heure NTP
 // #include <RemoteDebug.h>						// Telnet
 #include <EEPROM.h>									// variable en EEPROM
 // #include <EEPROMAnything.h>					// variable en EEPROM
@@ -493,7 +493,6 @@ void updateData() {
 	// debug.print(F("Dir = ")) ,debug.println(wunderground.getWindDir());	
 	// Serial.print("Alerte = "),Serial.println(wunderground.wunderground.getActiveAlertsCnt());
 	// Serial.print("Alerte = "),Serial.println(wunderground.getActiveAlertsMessage());
-	
 }
 //--------------------------------------------------------------------------------//
 // Progress bar helper
@@ -507,19 +506,30 @@ void drawProgress(uint8_t percentage, String text) {
 //--------------------------------------------------------------------------------//
 // draws the clock
 void drawTime() {
+	
+	char time_str[11];
+  char *dstAbbrev;
+  time_t now = dstAdjusted.time(&dstAbbrev);
+  struct tm * timeinfo = localtime (&now);
+	
 	tft.fillRect(0, 0, tft.width(), 57,ILI9341_BLACK); // efface existant
   ui.setTextAlignment(CENTER);
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
-	Serial.print(F("Date du jour : ")),Serial.print(madate());
-	Serial.print(" "),Serial.print(timeClient.getHours());
-	Serial.print(":"),Serial.println(timeClient.getMinutes()),
+	String madate = WDAY_NAMES[timeinfo->tm_wday] + " " + String(timeinfo->tm_mday) + " "+ MONTH_NAMES[timeinfo->tm_mon] + " " + String(1900 + timeinfo->tm_year);
+	Serial.print(F("Date du jour : ")),Serial.println(madate());
   ui.drawString(120, 20, madate());
   
-	// tft.fillRect(0, 27, tft.width(), 31,ILI9341_WHITE); // efface existant
   tft.setFont(&ArialRoundedMTBold_36);
-  ui.drawString(120, 56, timeClient.getHours() + ":" + timeClient.getMinutes());
-  // drawSeparator(65);
+	sprintf(time_str, "%02d:%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+  ui.drawString(120, 56, time_str);
+	Serial.println(time_str);
+	ui.setTextAlignment(CENTER);
+  ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);
+  tft.setFont(&ArialRoundedMTBold_14);
+	sprintf(time_str, "%s", dstAbbrev);
+  gfx.drawString(195, 27, time_str);  // Known bug: Cuts off 4th character of timezone abbreviation
+	Serial.println(time_str);
 }
 //--------------------------------------------------------------------------------//
 void drawCurrentWeather() {
@@ -742,7 +752,7 @@ String getMeteoconIcon(String iconText) {
 	tft.drawFastHLine(0, y, 200, ILI9341_RED);
 } */
 //--------------------------------------------------------------------------------//
-String madate(){
+/* String madate(){
 	String date = wunderground.getDate();
 	
 	String jour = date.substring(0,3);
@@ -772,7 +782,7 @@ String madate(){
 	date = jour +" " + date.substring(4,7) + " " + mois + " " + date.substring(12,16);
 	
 	return date;
-}
+} */
 //--------------------------------------------------------------------------------//
 void RemplaceCharSpec(){
 	// Remplacer les caracteres >127
