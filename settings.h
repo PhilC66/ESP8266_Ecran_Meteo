@@ -21,6 +21,7 @@ See more at http://blog.squix.ch
 // Parametres site perso
 // #define monSite "philippe.co.nf"		//Site internet perso
 
+#include <simpleDSTadjust.h>
 // Setup
 const int UPDATE_INTERVAL_SECS = 15 * 60;  // Update every 15 minutes
 boolean USE_TOUCHSCREEN_WAKE = false;      // use the touchscreen to wake up, ~90mA current draw
@@ -84,19 +85,19 @@ const char* getMeteoconIcon(String iconText) {
   if (iconText == "50d" || iconText == "50n") return fog;
   return unknown; */
 	
-	if (iconText == "01d")	return clear;
-	if (iconText == "01n")	return nt_clear;
-	if (iconText == "02d")	return partlycloudy;
-	if (iconText == "02n")	return nt_partlycloudy;
-	if (iconText == "03d" || iconText == "03n") return cloudy;
-	if (iconText == "04d")	return mostlycloudy;
-	if (iconText == "04n")	return nt_mostlycloudy;
-	if (iconText == "09d" || iconText == "09n")	return sleet;
-	if (iconText == "10d" || iconText == "10n")	return rain;
-	if (iconText == "11d" || iconText == "11n")	return tstorms;
-	if (iconText == "13d" || iconText == "13n")	return snow;
-	if (iconText == "50d" || iconText == "50n")	return fog;
-	return unknown;
+	if (iconText == "01d")	return F("clear");
+	if (iconText == "01n")	return "nt_clear";
+	if (iconText == "02d")	return "partlycloudy";
+	if (iconText == "02n")	return "nt_partlycloudy";
+	if (iconText == "03d" || iconText == "03n") return "cloudy";
+	if (iconText == "04d")	return "mostlycloudy";
+	if (iconText == "04n")	return "nt_mostlycloudy";
+	if (iconText == "09d" || iconText == "09n")	return "sleet";
+	if (iconText == "10d" || iconText == "10n")	return "rain";
+	if (iconText == "11d" || iconText == "11n")	return "tstorms";
+	if (iconText == "13d" || iconText == "13n")	return "snow";
+	if (iconText == "50d" || iconText == "50n")	return "fog";
+	return "unknown";
 }
 
 /***************************
