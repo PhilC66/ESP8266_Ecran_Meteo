@@ -147,7 +147,7 @@ int  zone  					= 0;				// zone de l'ecran
 byte frcst 					= 0;				// compteur forecast affiché 
 byte nbrecran 			= 4;				// nombre ecran existant
 
-boolean FlagAstronomy = true;
+// boolean FlagAstronomy = true;
 	
 long lastDownloadUpdate = millis();
 long lastDrew = 0;
@@ -204,7 +204,7 @@ void MesureBatterie();
 void GereEcran();
 void draw_ecran(byte i);
 void MajSoft();
-void drawVille();
+// void drawVille();
 
 // RemoteDebug Debug;
 //WiFiManager
@@ -273,7 +273,7 @@ void setup() {
   //Uncomment if you want to update all internet resources
   //SPIFFS.format();
 
-  updateTime();
+  // updateTime();
 	updateData();	  // load the weather information
 	MesureBatterie();
 	
@@ -350,10 +350,10 @@ void loop() {
 	if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {   
 		ecran = 0;
 		cpt ++;
-		if(cpt > 3){	// mise a l'heure tout les 4 passages (1 heure)
-			cpt = 0;
-			updateTime();
-		}
+		// if(cpt > 3){	// mise a l'heure tout les 4 passages (1 heure)
+			// cpt = 0;
+			// updateTime();
+		// }
 		updateData();
 		MesureBatterie();
 		lastDownloadUpdate = millis();			
@@ -399,22 +399,24 @@ void draw_ecran0(){// ecran principal
   drawTime();
   drawCurrentWeather();
   drawForecast(0);
-  if (FlagAstronomy){ 
+	//drawAstronomy();
+	
+  /* if (FlagAstronomy){ 
 		drawAstronomy();
 	}
 	else{
 		drawVille();
-	}
+	} */
 }
 //--------------------------------------------------------------------------------//
-void updateTime(){
+/* void updateTime(){
 	String texte = "Maj date heure...";
 	Serial.println(texte);
 	// debug.println(texte);
 	tft.setFont(&ArialRoundedMTBold_14);
   drawProgress(20, texte);
   timeClient.updateTime();
-}
+} */
 //--------------------------------------------------------------------------------//
 // Update the internet based information and update screen
 void updateData() {
@@ -656,7 +658,7 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 
 }
 //--------------------------------------------------------------------------------//
-void drawVille() { // conditions actuelles sur ville
+/* void drawVille() { // conditions actuelles sur ville
 	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
 	tft.setFont(&ArialRoundedMTBold_14);  
   ui.setTextAlignment(CENTER);
@@ -675,7 +677,7 @@ void drawVille() { // conditions actuelles sur ville
 	// temp += " %";
 	ui.drawString(230, 300, temp);
 	
-}
+} */
 //--------------------------------------------------------------------------------//
 void drawAstronomy() {
 	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
@@ -1417,14 +1419,14 @@ void GereEcran(){
 			break;
 		case 40:
 			if (ecran == 0){
-				if (FlagAstronomy){ 
+				/* if (FlagAstronomy){ 
 					drawVille();
 					FlagAstronomy = false;
 				}
 				else{
 					drawAstronomy();
 					FlagAstronomy = true;
-				}
+				} */
 			}
 			if (ecran == 4){
 				draw_ecran41(2);	// selection ville
