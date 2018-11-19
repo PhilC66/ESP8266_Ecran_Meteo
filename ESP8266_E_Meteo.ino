@@ -535,7 +535,8 @@ void drawTime() {
 void drawCurrentWeather() {
 	// draws current weather information	
   // Weather Icon	
-  String weatherIcon = getMeteoconIcon(wunderground.getTodayIcon());
+	
+  // String weatherIcon = getMeteoconIcon(wunderground.getTodayIcon());
 	
 	//------------------------ test --------------------------------
 	// String weatherIcon;
@@ -553,32 +554,33 @@ void drawCurrentWeather() {
 		// ui.drawString(239, 90, "                    ");
 	// }	
   //------------------------ test --------------------------------
-	
+	String weatherIcon = getMeteoconIcon(currentWeather.icon);
 	ui.drawBmp("/" + weatherIcon + extBmp, 0, 55);//PhC 22/07/2018
-	Serial.print(F("Icone = ")),Serial.print(wunderground.getTodayIcon()),Serial.print(":"),Serial.println(weatherIcon);
+	Serial.print(F("Icone = ")),Serial.println(weatherIcon);
   
   // Weather Text
   tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(RIGHT);
   //ui.drawString(239, 90, wunderground.getWeatherText());
-	RemplaceCharSpec();
-	ui.drawString(239, 90, texte);
+	// RemplaceCharSpec();
+	// ui.drawString(239, 90, texte);
+	ui.drawString(239, 90, Ville[1][config.city]);
 
   tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT
-  String degreeSign = "F";
-  if (IS_METRIC) {
-    degreeSign = "C";
-  }
-  String tempw = wunderground.getCurrentTemp();// + degreeSign;
+  // String degreeSign = "F";
+  // if (IS_METRIC) {
+    // degreeSign = "C";
+  // }
+  // String tempw = wunderground.getCurrentTemp();// + degreeSign;
   //tempw = "-25.2";
 	if(config.UseMaMeteo){
 		ui.drawString(110, 125, String(maMeteo.temp,1));
 	}
 	else{
-		ui.drawString(110, 125, tempw);//220 Temperature Wunderground
+		ui.drawString(110, 125, String(currentWeather.temp, 1) + (IS_METRIC ? "°C" : "°F"));//220 Temperature Wunderground
 		// si pas MaMeteo dessin # rouge pour signaler
 		// ui.setTextColor(ILI9341_RED, ILI9341_BLACK);
 		tft.setFont(&ArialRoundedMTBold_14);
@@ -608,6 +610,10 @@ void drawCurrentWeather() {
 		}	
 		ui.drawString(239, 125, String(maMeteo.tempmin,1));
 	}
+	tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(RIGHT);
+	ui.drawString(239, 140, currentWeather.description))
   // drawSeparator(135);
 }
 //--------------------------------------------------------------------------------//
@@ -784,7 +790,7 @@ String getMeteoconIcon(String iconText) {
 	return date;
 } */
 //--------------------------------------------------------------------------------//
-void RemplaceCharSpec(){
+/* void RemplaceCharSpec(){
 	// Remplacer les caracteres >127
 	// 130,136-138 	par e 101
 	// 131-134 			par a 97
@@ -808,7 +814,7 @@ void RemplaceCharSpec(){
 		}
 	texte = textec;
 	// Serial.print(F("texte converti =")), Serial.println(texte);
-}
+} */
 //---------------------------------------------------------------------------
 boolean JourNuit(){ 
 	// determine si jour ou nuit

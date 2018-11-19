@@ -72,6 +72,33 @@ const boolean IS_METRIC = true;
 //																			0								1							2						3						4				5					6				7				8					9						10							11						12					13			14			15		16				17					18						19
 // String wundergroundIcons [] = {"chanceflurries","chancerain","chancesleet","chancesnow","clear","cloudy","flurries","fog","hazy","mostlycloudy","mostlysunny","partlycloudy","partlysunny","rain","sleet","snow","sunny","tstorms","chancetstorms","unknown"};
 
+const char* getMeteoconIcon(String iconText) {
+  /* if (iconText == "01d" || iconText == "01n") return sunny;
+  if (iconText == "02d" || iconText == "02n") return partlysunny;
+  if (iconText == "03d" || iconText == "03n") return partlycloudy;
+  if (iconText == "04d" || iconText == "04n") return mostlycloudy;
+  if (iconText == "09d" || iconText == "09n") return rain;
+  if (iconText == "10d" || iconText == "10n") return rain;
+  if (iconText == "11d" || iconText == "11n") return tstorms;
+  if (iconText == "13d" || iconText == "13n") return snow;
+  if (iconText == "50d" || iconText == "50n") return fog;
+  return unknown; */
+	
+	if (iconText == "01d") 											return clear;
+	if (iconText == "01n") 											return nt_clear;
+	if (iconText == "02d") 											return partlycloudy;
+	if (iconText == "02n") 											return nt_partlycloudy;
+	if (iconText == "03d" || iconText == "03n") return cloudy;
+	if (iconText == "04d") 											return mostlycloudy;
+	if (iconText == "04n") 											return nt_mostlycloudy;
+	if (iconText == "09d" || iconText == "09n")	return sleet;
+	if (iconText == "10d" || iconText == "10n") return rain;
+	if (iconText == "11d" || iconText == "11n") return tstorms;
+	if (iconText == "13d" || iconText == "13n") return snow;
+  if (iconText == "50d" || iconText == "50n") return fog;
+  return unknown;
+}
+
 /***************************
  * End Settings
  **************************/
