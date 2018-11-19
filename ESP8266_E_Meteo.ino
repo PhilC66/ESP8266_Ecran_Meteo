@@ -151,6 +151,9 @@ byte nbrecran 			= 4;				// nombre ecran existant
 	
 long lastDownloadUpdate = millis();
 long lastDrew = 0;
+time_t dstOffset = 0;
+String moonAgeImage = "";
+uint8_t moonAge = 0;
 
 #define Ip_Analogique 0					// entree analogique mesure tension
 #define Op_BackLight  4					// sortie commande Backlight PWM
@@ -196,8 +199,9 @@ void drawCurrentWeatherDetail();
 // void drawLabelValue(uint8_t line, String label, String value);
 // void drawForecastTable(uint8_t start);
 String getTime(time_t *timestamp);
-const char* getMeteoconIconFromProgmem(String iconText);
-const char* getMiniMeteoconIconFromProgmem(String iconText);
+const char* getMeteoconIcon(String iconText);
+boolean JourNuit();
+// const char* getMiniMeteoconIconFromProgmem(String iconText);
 																			// void drawSeparator(uint16_t y);
 																			// void sleepNow(int wakeup);
 void MesureBatterie();
@@ -275,10 +279,9 @@ void setup() {
 
   // updateTime();
 	updateData();	  // load the weather information
+	tft.fillRect(0, 0, tft.width(), tft.height(),ILI9341_BLACK);// efface
 	MesureBatterie();
-	
-	// Trame_Thingspeak();
-	
+
 }
 //---------------------------------------------------------------------------
 void loop() {
@@ -324,7 +327,7 @@ void loop() {
 			TS_Point p = spitouch.getPoint();
 		}
 	}
-	if (screen == 0) {
+	if (ecran == 0) {
     drawTime();
 	}
 	// Check if we should update the clock
@@ -467,7 +470,7 @@ void updateData() {
   OpenWeatherMapCurrent *currentWeatherClient = new OpenWeatherMapCurrent();
   currentWeatherClient->setMetric(IS_METRIC);
   currentWeatherClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
-  currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],Ville[0][config.city]);
+  currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],ville[0][config.city]);
   delete currentWeatherClient;
   currentWeatherClient = nullptr;
 
@@ -477,7 +480,7 @@ void updateData() {
   forecastClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
   uint8_t allowedHours[] = {12, 0};
   forecastClient->setAllowedHours(allowedHours, sizeof(allowedHours));
-  forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],Ville[0][config.city], MAX_FORECASTS);
+  forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],ville[0][config.city], MAX_FORECASTS);
   delete forecastClient;
   forecastClient = nullptr;
 
@@ -489,6 +492,7 @@ void updateData() {
   moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
   delete astronomy;
   astronomy = nullptr;
+	drawProgress(100, "Fin...");
   delay(1000);	
 	
 /* 	drawProgress(40, "Maj MaMeteo...");
@@ -537,19 +541,19 @@ void drawTime() {
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
 	String madate = WDAY_NAMES[timeinfo->tm_wday] + " " + String(timeinfo->tm_mday) + " "+ MONTH_NAMES[timeinfo->tm_mon] + " " + String(1900 + timeinfo->tm_year);
-	Serial.print(F("Date du jour : ")),Serial.println(madate());
-  ui.drawString(120, 20, madate());
+	// Serial.print(F("Date du jour : ")),Serial.println(madate);
+  ui.drawString(120, 20, madate);
   
   tft.setFont(&ArialRoundedMTBold_36);
 	sprintf(time_str, "%02d:%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
   ui.drawString(120, 56, time_str);
-	Serial.println(time_str);
-	ui.setTextAlignment(CENTER);
-  ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);
+	// Serial.println(time_str);
+	ui.setTextAlignment(RIGHT);
+  ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
 	sprintf(time_str, "%s", dstAbbrev);
-  gfx.drawString(195, 27, time_str);  // Known bug: Cuts off 4th character of timezone abbreviation
-	Serial.println(time_str);
+  ui.drawString(238, 45, time_str);  // Known bug: Cuts off 4th character of timezone abbreviation
+	// Serial.println(time_str);
 }
 //--------------------------------------------------------------------------------//
 void drawCurrentWeather() {
@@ -585,7 +589,7 @@ void drawCurrentWeather() {
   //ui.drawString(239, 90, wunderground.getWeatherText());
 	// RemplaceCharSpec();
 	// ui.drawString(239, 90, texte);
-	ui.drawString(239, 90, Ville[1][config.city]);
+	ui.drawString(239, 90, ville[1][config.city]);
 
   tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
@@ -633,7 +637,7 @@ void drawCurrentWeather() {
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	ui.setTextAlignment(RIGHT);
-	ui.drawString(239, 140, currentWeather.description))
+	ui.drawString(239, 140, currentWeather.description);
   // drawSeparator(135);
 }
 //--------------------------------------------------------------------------------//
@@ -662,7 +666,7 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 	// String weatherIcon = getMeteoconIcon(wunderground.getForecastIcon(dayIndex));
 	tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextAlignment(CENTER);
-	ui.setTextColor(ILI9341_CTAN, ILI9341_BLACK);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	time_t time = forecasts[dayIndex].observationTime + dstOffset;
   struct tm * timeinfo = localtime (&time);
   ui.drawString(x + 25, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,3) + " " + String(timeinfo->tm_hour) + ":00");
@@ -670,7 +674,7 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   ui.drawString(x + 25, y, String(forecasts[dayIndex].temp, 1) + (IS_METRIC ? "°C" : "°F"));
 	
-	String weatherIcon = getMiniMeteoconIcon(forecasts[dayIndex].icon);
+	String weatherIcon = getMeteoconIcon(forecasts[dayIndex].icon);
   ui.drawBmp("/mini/" + weatherIcon + extBmp, x, y + 15);
 	
 	Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);

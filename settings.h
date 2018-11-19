@@ -44,10 +44,16 @@ const String SUN_MOON_TEXT[] = {"Sun", "Rise", "Set", "Moon", "Age", "Illum"};
 const String MOON_PHASES[] = {"New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
                               "Full Moon", "Waning Gibbous", "Third quarter", "Waning Crescent"};
 // TimeClient settings
+// Change for 12 Hour/ 24 hour style clock
+bool IS_STYLE_12HR = false;
+
 // const float UTC_OFFSET = 1;// 2 en ete, 1 en hiver
 #define UTC_OFFSET +1
 struct dstRule StartRule	= {"CEST", Last, Sun, Mar, 2, 3600}; // Central European Summer Time = UTC/GMT +2 hours
 struct dstRule EndRule		= {"CET" , Last, Sun, Oct, 2, 0};    // Central European Time = UTC/GMT +1 hour
+
+#define NTP_SERVERS "0.fr.pool.ntp.org", "1.ch.pool.ntp.org", "2.ch.pool.ntp.org"
+// #define NTP_SERVERS "us.pool.ntp.org", "time.nist.gov", "pool.ntp.org"
 
 // Wunderground Settings 2x API_KEY pour limiter le nbr de connexions journalieres
 // WUNDERGRROUND_API_KEY[0] pour Bompas et Epinal
@@ -85,18 +91,19 @@ const char* getMeteoconIcon(String iconText) {
   if (iconText == "50d" || iconText == "50n") return fog;
   return unknown; */
 	
-	if (iconText == "01d")	return F("clear");
+	if (iconText == "01d")	return "clear";
 	if (iconText == "01n")	return "nt_clear";
 	if (iconText == "02d")	return "partlycloudy";
 	if (iconText == "02n")	return "nt_partlycloudy";
 	if (iconText == "03d" || iconText == "03n") return "cloudy";
 	if (iconText == "04d")	return "mostlycloudy";
-	if (iconText == "04n")	return "nt_mostlycloudy";
+	if (iconText == "04n")	return "mostlycloudy";// bug bmp? "nt_mostlycloudy";
 	if (iconText == "09d" || iconText == "09n")	return "sleet";
 	if (iconText == "10d" || iconText == "10n")	return "rain";
 	if (iconText == "11d" || iconText == "11n")	return "tstorms";
 	if (iconText == "13d" || iconText == "13n")	return "snow";
 	if (iconText == "50d" || iconText == "50n")	return "fog";
+	Serial.print(F("unknown :")),Serial.print(iconText),Serial.print(F("|end"));
 	return "unknown";
 }
 
