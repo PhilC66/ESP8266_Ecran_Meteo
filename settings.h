@@ -97,7 +97,7 @@ const char* getMeteoconIcon(String iconText) {
 	if (iconText == "02n")	return "nt_partlycloudy";
 	if (iconText == "03d" || iconText == "03n") return "cloudy";
 	if (iconText == "04d")	return "mostlycloudy";
-	if (iconText == "04n")	return "mostlycloudy";// bug bmp? "nt_mostlycloudy";
+	if (iconText == "04n")	return "nt_mostlycloudy";
 	if (iconText == "09d" || iconText == "09n")	return "sleet";
 	if (iconText == "10d" || iconText == "10n")	return "rain";
 	if (iconText == "11d" || iconText == "11n")	return "tstorms";

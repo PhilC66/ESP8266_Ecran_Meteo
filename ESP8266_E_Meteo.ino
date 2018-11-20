@@ -281,7 +281,7 @@ void setup() {
 	updateData();	  // load the weather information
 	tft.fillRect(0, 0, tft.width(), tft.height(),ILI9341_BLACK);// efface
 	MesureBatterie();
-
+	MajSoft();	// verification si maj soft disponible
 }
 //---------------------------------------------------------------------------
 void loop() {
@@ -1520,7 +1520,7 @@ void MajSoft() {
   switch (ret) {
     case HTTP_UPDATE_FAILED:
       //Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-      //debug.println(F("Pas de mise à jour disponible !"));
+      Serial.println(F("Pas de mise à jour disponible !"));
       // messageMQTT = "Pas de Maj Soft";
       break;
     case HTTP_UPDATE_NO_UPDATES:
