@@ -305,7 +305,7 @@ void loop() {
 		}
 	}
 	
-	if(millis() - lastDrew > 1000 && String(timeinfo->tm_sec) == "0"){
+	if(millis() - lastDrew > 10000 && String(timeinfo->tm_sec) == "0"){
 		drawTime();
 		lastDrew = millis();
 		Serial.print(timeinfo->tm_hour),Serial.print(":"),Serial.print(timeinfo->tm_min),Serial.print(":"),Serial.println(timeinfo->tm_sec);
@@ -370,7 +370,7 @@ void draw_ecran0(){// ecran principal
   drawTime();
   drawCurrentWeather();
   drawForecast(0);
-	//drawAstronomy();
+	drawAstronomy();
 	
   /* if (FlagAstronomy){ 
 		drawAstronomy();
@@ -558,24 +558,8 @@ void drawCurrentWeather() {
 }
 //--------------------------------------------------------------------------------//
 void drawForecast(byte seq) {
-	/* // draws the three forecast columns
-	// seq = 0,1,2. 3 sequences de 3 jours
-	// seq = 0, j = 0  , jour  0, +1, +2
-	// seq = 1, j = 6  , jour +3, +4, +5
-	// seq = 2, j = 12 , jour +6, +7, +8
-	byte j = 0;
-	if(seq == 0) j = 0;
-	if(seq == 1) j = 6;
-	if(seq == 2) j = 12;
-	//writeFillRect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color) 
-	tft.fillRect(0, 153, tft.width(), 80,ILI9341_BLACK); // efface existant
-
-	drawForecastDetail(10 , 165, j);
-	drawForecastDetail(95 , 165, j+2);
-	drawForecastDetail(180, 165, j+4);
-	
-  // drawSeparator(165 + 65 + 10);	 */
-	
+	// draws the three forecast columns
+		
 	byte j = 0;
 	if(seq == 0) j = 0;
 	if(seq == 1) j = 3;
@@ -653,8 +637,8 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 } */
 //--------------------------------------------------------------------------------//
 void drawAstronomy() {
-	/* tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
-	// draw moonphase and sunrise/set and moonrise/set
+	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
+	/* // draw moonphase and sunrise/set and moonrise/set
   int moonAgeImage = 24 * wunderground.getMoonAge().toInt() / 30.0;
 	// moonAgeImage = 23;
   ui.drawBmp("/moon" + String(moonAgeImage) + extBmp, 120 - 30, 255);
@@ -678,53 +662,7 @@ void drawAstronomy() {
   ui.drawString(220, 285, wunderground.getMoonriseTime());
   ui.drawString(220, 300, wunderground.getMoonsetTime());   */
 }
-//--------------------------------------------------------------------------------//
-/* String getMeteoconIcon(String iconText) {
-	// Serial.print("icontext :"),Serial.print(iconText);
-	// Serial.print(","),Serial.println(iconText.length());
-	if (iconText == "hazy") return "fog";
-	if (iconText == "sunny") return "clear";
-	if (iconText == "nt_sunny") return "nt_clear";								//V15
-	if (iconText == "partlysunny") return "mostlycloudy";
-	if (iconText == "nt_partlysunny") return "nt_mostlycloudy";		//V15
-	if (iconText == "mostlysunny") return "partlycloudy";
-	if (iconText == "nt_mostlysunny") return "nt_partlycloudy";		//V15
-	if (iconText.substring(0,3) == "nt_"){
-		iconText = iconText.substring(3,iconText.length());
-		Serial.print(iconText);
-		return iconText;
-	}
-	if (iconText.length() < 2){
-		return "unknown";
-	}
-	else{
-		 return iconText;
-	}
-/* 	
-	// Helper function, should be part of the weather station library and should disappear soon
-  if (iconText == "F") return "chanceflurries";	//0
-  if (iconText == "Q") return "chancerain";			//1
-  if (iconText == "W") return "chancesleet";		//2
-  if (iconText == "V") return "chancesnow";			//3
-  if (iconText == "S") return "chancetstorms";
-  if (iconText == "B") return "clear";					//4 "clear" ou "sunny"
-  if (iconText == "Y") return "cloudy";					//5
-  if (iconText == "F") return "flurries";				//6
-  if (iconText == "M") return "fog";						//7 "fog" ou "hazy"
-  // if (iconText == "E") return "hazy";						//8
-  if (iconText == "Y") return "mostlycloudy";		//9 "mostlycloudy" ou "partlysunny"
-  // if (iconText == "H") return "mostlysunny";		//10
-  if (iconText == "H") return "partlycloudy";		//11 "partlycloudy" ou "mostlysunny"
-  // if (iconText == "J") return "partlysunny";		//12
-  if (iconText == "R") return "rain";						//13
-	if (iconText == "W") return "sleet";					//14
-	if (iconText == "W") return "snow";						//15
-  // if (iconText == "B") return "sunny";					//16
-  if (iconText == "0") return "tstorms";				//17
 
-  return "unknown";															//18
-	 */
-//} */
 //--------------------------------------------------------------------------------//
 /* void drawSeparator(uint16_t y) {
 	// if you want separators, uncomment the tft-line
@@ -732,38 +670,7 @@ void drawAstronomy() {
   // tft.drawFastHLine(10, y, 240 - 2 * 10, 0x4228);
 	tft.drawFastHLine(0, y, 200, ILI9341_RED);
 } */
-//--------------------------------------------------------------------------------//
-/* String madate(){
-	String date = wunderground.getDate();
-	
-	String jour = date.substring(0,3);
-	String mois = date.substring(8,11);
-	
-	if(mois == F("Jan")) mois = F("Janvier");
-	if(mois == F("Feb")) mois = F("Fevrier");
-	if(mois == F("Mar")) mois = F("Mars");
-	if(mois == F("Apr")) mois = F("Avril");
-	if(mois == F("May")) mois = F("Mai");
-	if(mois == F("Jun")) mois = F("Juin");
-	if(mois == F("Jul")) mois = F("Juillet");
-	if(mois == F("Aug")) mois = F("Aout");
-	if(mois == F("Sep")) mois = F("Septembre");
-	if(mois == F("Oct")) mois = F("Octobre");
-	if(mois == F("Nov")) mois = F("Novembre");
-	if(mois == F("Dec")) mois = F("Decembre");
-	
-	if(jour == F("Mon")) jour = F("Lundi");
-	if(jour == F("Tue")) jour = F("Mardi");
-	if(jour == F("Wed")) jour = F("Mercredi");
-	if(jour == F("Thu")) jour = F("Jeudi");
-	if(jour == F("Fri")) jour = F("Vendredi");
-	if(jour == F("Sat")) jour = F("Samedi");
-	if(jour == F("Sun")) jour = F("Dimanche");
-		
-	date = jour +" " + date.substring(4,7) + " " + mois + " " + date.substring(12,16);
-	
-	return date;
-} */
+
 //--------------------------------------------------------------------------------//
 String RemplaceCharSpec(String texte){
 	// Remplacer les caracteres >127
@@ -799,10 +706,6 @@ boolean JourNuit(){
 	struct tm * timeinfo = localtime (&now);
 	time_t timesunrise = currentWeather.sunrise + dstOffset;
 	time_t timesunset  = currentWeather.sunset  + dstOffset;
-	// Serial.println(now);
-	// Serial.println(timesunrise);
-	// Serial.printf("%02d:%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-	// Serial.print(" Sun rise : "),Serial.println(getTime(&timesunrise));
 	
 	timesunrise -= 3600;	// marge 1 heure
 	timesunset  += 3600;
@@ -810,20 +713,18 @@ boolean JourNuit(){
 	if(timesunset > timesunrise){
 		if((now > timesunset && now > timesunrise)
 		 ||(now < timesunset && now < timesunrise)){
-			// Nuit
-			return false;
+			return false;	// Nuit
 		}
-		else{	// Jour
-			return true;
+		else{
+			return true;	// Jour
 		}
 	}
 	else{
 		if(now > timesunset && now < timesunrise){
-		 // Nuit
-			return false;
+			return false;	// Nuit
 		}
-		else{	// Jour
-			return true;
+		else{
+			return true;	// Jour
 		}
 	}
 }
@@ -933,47 +834,35 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	y=70;//65
 	float pluie1h;
 	float pluie24h;
-	if(config.UseMaMeteo){
+	if(config.UseMaMeteo){ // pas d'info pluie avec API Openweathermap
 		pluie1h  = maMeteo.rain1h;
 		pluie24h = maMeteo.rain24h;
-	}
-	else{
-		/* pluie1h  = wunderground.getPrecipitation1h().toFloat();
-		pluie24h = wunderground.getPrecipitationToday().toFloat(); */
 		
-		//debug.print(F("Pluie 1h = ")),//debug.print(wunderground.getPrecipitation1h());
-		//debug.print(";"),//debug.println(pluie1h);
-		//debug.print(F("Pluie 24h = ")),//debug.print(wunderground.getPrecipitationToday());
-		//debug.print(";"),//debug.println(pluie24h);
+		if (pluie1h > 0){		
+			ui.drawBmp("/pluie"  + extBmp, x, y);// icone pluie	faible	
+		}
+		else if(pluie1h > 5){	//	V18
+			ui.drawBmp("/pluie2" + extBmp, x, y);// icone pluie	forte
+		}
+		else{
+			ui.drawBmp("/npluie" + extBmp, x, y);// icone pas de pluie 
+		}
 		
-	}
+		tft.setFont(&ArialRoundedMTBold_36);
+		ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+		ui.setTextAlignment(LEFT);//RIGHT
+		temp = String(pluie1h,1);
+		ui.drawString(110, 125, temp);	// Rain 1h
+		tft.setFont(&ArialRoundedMTBold_14);
+		ui.setTextAlignment(LEFT);
+		temp = String(pluie24h,1);
+		ui.drawString(200, 108, temp);	// raIN 24
+		ui.drawString(200, 125, "mm");
+		
+		tft.setFont(&ArialRoundedMTBold_14);
+		ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+		ui.setTextAlignment(LEFT);
 	
-	if (pluie1h > 0){		
-		ui.drawBmp("/pluie"  + extBmp, x, y);// icone pluie	faible	
-	}
-	else if(pluie1h > 5){	//	V18
-		ui.drawBmp("/pluie2" + extBmp, x, y);// icone pluie	forte
-	}
-	else{
-		ui.drawBmp("/npluie" + extBmp, x, y);// icone pas de pluie 
-	}
-	
-	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT
-	temp = String(pluie1h,1);
-	ui.drawString(110, 125, temp);	// Rain 1h
-	tft.setFont(&ArialRoundedMTBold_14);
-	ui.setTextAlignment(LEFT);
-	temp = String(pluie24h,1);
-	ui.drawString(200, 108, temp);	// raIN 24
-	ui.drawString(200, 125, "mm");
-	
-	tft.setFont(&ArialRoundedMTBold_14);
-	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);
-	
-	if(config.UseMaMeteo){
 		temp = "";//Der pluie,
 		temp += String(maMeteo.der24h,1);
 		temp += " mm, ";
@@ -1010,6 +899,41 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	x=20;
 	y=255;
 	// Zone Vent
+	Serial.print("Vent :"),Serial.print(currentWeather.windSpeed),Serial.print(" m/s :"),Serial.println(currentWeather.windDeg);
+	if(currentWeather.windDeg > 338 && currentWeather.windDeg < 24){
+		ui.drawBmp("/n" + extBmp , x, y);// icone vent		
+	}
+	else if(currentWeather.windDeg > 23 && currentWeather.windDeg < 69){
+		ui.drawBmp("/ne" + extBmp , x, y);
+	}
+	else if(currentWeather.windDeg > 68 && currentWeather.windDeg < 114){
+		ui.drawBmp("/e" + extBmp , x, y);
+	}
+	else if(currentWeather.windDeg > 113 && currentWeather.windDeg < 159){
+		ui.drawBmp("/se" + extBmp , x, y);
+	}
+	else if(currentWeather.windDeg > 158 && currentWeather.windDeg < 204){
+		ui.drawBmp("/s" + extBmp , x, y);
+	}
+	else if(currentWeather.windDeg > 203 && currentWeather.windDeg < 249){
+		ui.drawBmp("/so" + extBmp , x, y);
+	}
+	else if(currentWeather.windDeg > 248 && currentWeather.windDeg < 294){
+		ui.drawBmp("/o" + extBmp , x, y);
+	}
+	else if(currentWeather.windDeg > 293 && currentWeather.windDeg < 339){
+		ui.drawBmp("/no" + extBmp , x, y);
+	}
+	tft.setFont(&ArialRoundedMTBold_36);
+  ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+  ui.setTextAlignment(LEFT);//RIGHT
+	temp = String(currentWeather.windSpeed/1000*3600,1);
+	ui.drawString(110, 300, temp);	// vitesse vent
+	temp = String(currentWeather.windDeg,1);
+	// tft.setFont(&ArialRoundedMTBold_14);
+	// ui.drawString(200, 283, temp);	// vitesse vent	
+	tft.setFont(&ArialRoundedMTBold_14);
+	ui.drawString(200, 283, "km/h");	// vitesse vent	 */
 	/* String dir = wunderground.getWindDir();
 	dir.toUpperCase();
 	dir.trim();
