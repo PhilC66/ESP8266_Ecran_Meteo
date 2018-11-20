@@ -146,7 +146,7 @@ byte ecran 					= 0;				// ecran actif
 int  zone  					= 0;				// zone de l'ecran
 byte frcst 					= 0;				// compteur forecast affiché 
 byte nbrecran 			= 4;				// nombre ecran existant
-
+byte MinMajSoft			= 0;				// minute de verification mise à jour soft
 // boolean FlagAstronomy = true;
 	
 long lastDownloadUpdate = millis();
@@ -243,7 +243,7 @@ void setup() {
 		delay(100);
 		Serial.print(F("Nouvelle ville : ")),Serial.println(ville[1][config.city]);
 	}
-	
+	MinMajSoft = random(0,10);
 	// WUNDERGROUND_CITY = ville[0][config.city];
 	// Serial.println(WUNDERGROUND_CITY);
 
@@ -279,14 +279,16 @@ void setup() {
 
   // updateTime();
 	updateData();	  // load the weather information
-	tft.fillRect(0, 0, tft.width(), tft.height(),ILI9341_BLACK);// efface
 	MesureBatterie();
 	MajSoft();	// verification si maj soft disponible
+	draw_ecran0();
 }
 //---------------------------------------------------------------------------
 void loop() {
-	static byte cpt = 0; // compte nbr passage updateData, à 4 soit 1heure, faire mise a l'heure
-	// "standard setup"
+	char *dstAbbrev;
+  time_t now = dstAdjusted.time(&dstAbbrev);
+  struct tm * timeinfo = localtime (&now);
+	
 	if (!spitouch.bufferEmpty()){				// si ecran touché
 		analogWrite(Op_BackLight,1023);		// Backlight ON
 		TS_Point p = spitouch.getPoint(); // recupere les coordonnées
@@ -327,33 +329,15 @@ void loop() {
 			TS_Point p = spitouch.getPoint();
 		}
 	}
-	if (ecran == 0) {
-    drawTime();
-	}
-	// Check if we should update the clock
-	/* if (millis() - lastDrew > 30000 && timeClient.getSeconds() == "00") {
-		//debug.print(timeClient.getHours()),//debug.print(":"),//debug.println(timeClient.getMinutes());
-		if(timeClient.getHours() == "03" && timeClient.getMinutes() == "05"){
-			//debug.println("Mise a jour");
-			// //debug.print(timeClient.getHours()),//debug.print(":"),//debug.println(timeClient.getMinutes());
-			MajSoft();
-		}
+	
+	if(millis() - lastDrew > 1000 && String(timeinfo->tm_sec) == "0"){
 		drawTime();
 		lastDrew = millis();
-		
-		if(JourNuit()){
-			Serial.println(F("Jour"));
-			analogWrite(Op_BackLight,1023);		// Backlight ON
+		Serial.print(timeinfo->tm_hour),Serial.print(":"),Serial.print(timeinfo->tm_min),Serial.print(":"),Serial.println(timeinfo->tm_sec);
+		if(String(timeinfo-> tm_hour) == "3" && String(timeinfo-> tm_min) == String(MinMajSoft)){	// Majsoft entre 03h00 et 03h10
+			Serial.println(F("Mise a jour Soft"));
+			MajSoft();
 		}
-		else{
-			Serial.println(F("Nuit"));
-			analogWrite(Op_BackLight,50);			// Backlight OFF
-		}			
-	} */
-	
-	if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
-		updateData();
-		lastDownloadUpdate = millis();
 		MesureBatterie();	
 		if(JourNuit()){
 			Serial.println(F("Jour"));
@@ -362,22 +346,15 @@ void loop() {
 		else{
 			Serial.println(F("Nuit"));
 			analogWrite(Op_BackLight,50);			// Backlight OFF 50
-		}		
-  }
+		}
+	}
 
-	// Check if we should update weather information
-	/* if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {   
-		ecran = 0;
-		cpt ++;
-		// if(cpt > 3){	// mise a l'heure tout les 4 passages (1 heure)
-			// cpt = 0;
-			// updateTime();
-		// }
+	if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
 		updateData();
-		MesureBatterie();
-		lastDownloadUpdate = millis();			
-		// Trame_Thingspeak();
-	} */
+		lastDownloadUpdate = millis();
+		ecran = 0;
+		draw_ecran0();
+  }
 		
 	ArduinoOTA.handle();	// Handle OTA update requests
 	//debug.handle();				// Debug par Telnet
@@ -493,30 +470,7 @@ void updateData() {
   delete astronomy;
   astronomy = nullptr;
 	drawProgress(100, "Fin...");
-  delay(1000);	
-	
-/* 	drawProgress(40, "Maj MaMeteo...");
-			
-  drawProgress(50, "c");
-  wunderground.updateConditions(WUNDERGRROUND_API_KEY[API_KEY_Nbr] , WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
-  drawProgress(60, "Maj previsions...");
-  wunderground.updateForecast(WUNDERGRROUND_API_KEY[API_KEY_Nbr], WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
-  drawProgress(70, "Maj astronomie...");
-  wunderground.updateAstronomy(WUNDERGRROUND_API_KEY[API_KEY_Nbr], WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
-	// V20 drawProgress(80, "Maj Alerte...");
-  // V20 wunderground.updateAlerts(WUNDERGRROUND_API_KEY, WUNDERGRROUND_LANGUAGE, WUNDERGROUND_COUNTRY, WUNDERGROUND_CITY);
-  drawProgress(100, "Fin...");
-  delay(100);
-	draw_ecran(0); */
-	
-	// Serial.print(F("Vent = ")),Serial.println(wunderground.getWindSpeed());
-	// Serial.print(F("gust = ")),Serial.println(wunderground.getWindGust());
-	// Serial.print(F("Dir = ")) ,Serial.println(wunderground.getWindDir());
-	// debug.print(F("Vent = ")),debug.println(wunderground.getWindSpeed());
-	// debug.print(F("gust = ")),debug.println(wunderground.getWindGust());
-	// debug.print(F("Dir = ")) ,debug.println(wunderground.getWindDir());	
-	// Serial.print("Alerte = "),Serial.println(wunderground.wunderground.getActiveAlertsCnt());
-	// Serial.print("Alerte = "),Serial.println(wunderground.getActiveAlertsMessage());
+  delay(1000);
 }
 //--------------------------------------------------------------------------------//
 // Progress bar helper
@@ -545,7 +499,7 @@ void drawTime() {
   ui.drawString(120, 20, madate);
   
   tft.setFont(&ArialRoundedMTBold_36);
-	sprintf(time_str, "%02d:%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+	sprintf(time_str, "%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min);
   ui.drawString(120, 56, time_str);
 	// Serial.println(time_str);
 	ui.setTextAlignment(RIGHT);
@@ -557,88 +511,75 @@ void drawTime() {
 }
 //--------------------------------------------------------------------------------//
 void drawCurrentWeather() {
-	// draws current weather information	
-  // Weather Icon	
+	// draws current weather information
 	
-  // String weatherIcon = getMeteoconIcon(wunderground.getTodayIcon());
-	
-	//------------------------ test --------------------------------
-	// String weatherIcon;
-	// for(int i=0;i<20;i++){
-		// weatherIcon = getMeteoconIcon(wundergroundIcons[i]);
-		// ui.drawBmp("/" + weatherIcon + extBmp, 0, 55);//PhC 22/07/2018
-		// Serial.print("Icone = "),Serial.print(wunderground.getTodayIcon()),Serial.print(":"),Serial.println(weatherIcon);
-		// tft.setFont(&ArialRoundedMTBold_14);
-		// ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-		// ui.setTextAlignment(RIGHT);
-		// ui.drawString(239, 90, wunderground.getWeatherText());
-		// RemplaceCharSpec();
-		// ui.drawString(239, 90, wundergroundIcons[i]);
-		// delay(1000);
-		// ui.drawString(239, 90, "                    ");
-	// }	
-  //------------------------ test --------------------------------
+	// Weather Icon
 	String weatherIcon = getMeteoconIcon(currentWeather.icon);
-	ui.drawBmp("/" + weatherIcon + extBmp, 0, 55);//PhC 22/07/2018
+	ui.drawBmp("/" + weatherIcon + extBmp, 0, 55);
 	Serial.print(F("Icone = ")),Serial.println(weatherIcon);
   
-  // Weather Text
+  // Weather Ville
   tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(RIGHT);
-  //ui.drawString(239, 90, wunderground.getWeatherText());
-	// RemplaceCharSpec();
-	// ui.drawString(239, 90, texte);
-	ui.drawString(239, 90, ville[1][config.city]);
+	ui.drawString(239, 85, ville[1][config.city]);// 239,90
 
+	// Weather temperatur
   tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT
-  // String degreeSign = "F";
-  // if (IS_METRIC) {
-    // degreeSign = "C";
-  // }
-  // String tempw = wunderground.getCurrentTemp();// + degreeSign;
-  //tempw = "-25.2";
 	if(config.UseMaMeteo){
-		ui.drawString(110, 125, String(maMeteo.temp,1));
+		ui.drawString(110, 120, String(maMeteo.temp,1));//110,125
 	}
 	else{
-		ui.drawString(110, 125, String(currentWeather.temp, 1) + (IS_METRIC ? "°C" : "°F"));//220 Temperature Wunderground
+		ui.drawString(110, 120, String(currentWeather.temp, 1) + (IS_METRIC ? "°C" : "°F"));//220 Temperature Wunderground
 		// si pas MaMeteo dessin # rouge pour signaler
 		// ui.setTextColor(ILI9341_RED, ILI9341_BLACK);
 		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextAlignment(RIGHT);
-		ui.drawString(239, 125, "#");
+		ui.drawString(239, 120, "#");
 	}
 	
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   // maMeteo.tempmax = 45.2;
 	if(config.UseMaMeteo){
-		if(maMeteo.tempmax > 30) {
+		if(maMeteo.tempmax > 30) {													//tempmax
 			ui.setTextColor(ILI9341_RED, ILI9341_BLACK);//mettre en rouge sinon cyan
 		}
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}
 		ui.setTextAlignment(RIGHT);
-		ui.drawString(239, 108, String(maMeteo.tempmax,1));//105
+		ui.drawString(239, 103, String(maMeteo.tempmax,1));//108
 	
 	// maMeteo.tempmin = -25.5;	
-		if(maMeteo.tempmin < 0){
-				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	//tempmin
+		if(maMeteo.tempmin < 0){													//tempmin
+				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
 		}
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}	
 		ui.drawString(239, 125, String(maMeteo.tempmin,1));
 	}
+	// Weather Text
 	tft.setFont(&ArialRoundedMTBold_14);
-	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
 	ui.setTextAlignment(RIGHT);
-	ui.drawString(239, 140, currentWeather.description);
+	ui.drawString(239, 135, currentWeather.description);//239,140
   // drawSeparator(135);
+	
+	//------------------------ test --------------------------------
+/* 		String bidon[12]={"01d","01n","02d","02n","03d","04d","04n","09d","10d","11d","13d","50d"};
+		String weatherIcon0;
+		for(int i = 0; i<12;i++){
+			weatherIcon0 = getMeteoconIcon(bidon[i]);
+			ui.drawBmp("/" + weatherIcon0 + extBmp, 0, 55);
+			ui.drawString(239, 135, weatherIcon0);//239,140
+			Serial.print(F("Icone = ")),Serial.println(weatherIcon0);
+			delay(1000);
+		} */
+  //------------------------ test --------------------------------
 }
 //--------------------------------------------------------------------------------//
 void drawForecast(byte seq) {
