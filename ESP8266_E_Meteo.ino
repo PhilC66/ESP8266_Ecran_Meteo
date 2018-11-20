@@ -32,7 +32,7 @@ See more at http://blog.squix.ch
 16	RT CS Touch Screen
 */
 
-/* recherche mise a jour soft à 03h05 sur site perso*/
+/* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoir */
 /* HUZZAH esp8266	4M(3M SPIFFS)
 ----------------------to do----------------------------------
 securiser extraction data Mameteo bug si message erreur apres les données
@@ -45,27 +45,7 @@ ou utiliser JSON decode
 -------------------------------------------------------------*/
 
 /*
-V16 14/11/2018 mise a jour librairie WundergroundClient.h, ancienne version dans quarantaine
-V15 09/11/2018
-ajout icones nuit dans data et prise en compte
-V14 28/10/2018
-changement timezone dans settings
-suppression debug incompatible avec derniere version librairies
-
-V13 22/08/2018 gestion 2xAPI_KEY en fonction ville selectionnée
-420352 (40%),45620 (55%)
-
-V12 21/08/2018 correction bug taille affichage lors de la mise à l'heure auto
-420192 (40%), 45668 octets (55%)
-V10 10/08/2018
-420224 octets (40%), 45668 octets (55%) de mémoire dynamique
-
-version simplification nom icones sans telechargement
-V100 420940 octets (40%), 45832 octets (55%) de mémoire dynamique
-ecran selection ville
-V20 20/03/2018 suppression chargement Alert, blocage lors de la mise a jour?
-V18 06/11/2017 changement heure dans settings
-
+V100 18/11/2018 Migration Wunderground vers Weathermap
 */
 
 #include <Arduino.h>
@@ -78,7 +58,6 @@ V18 06/11/2017 changement heure dans settings
 #include "GfxUi.h"									// Additional UI functions
 #include "ArialRoundedMTBold_14.h"	// Fonts created by http://oleddisplay.squix.ch/
 #include "ArialRoundedMTBold_36.h"
-// #include "WebResource.h"						// Download helper
 #include <ESP8266WiFi.h>
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
@@ -91,8 +70,6 @@ V18 06/11/2017 changement heure dans settings
 #include <OpenWeatherMapCurrent.h>
 #include <OpenWeatherMapForecast.h>
 #include <Astronomy.h>
-// #include <WundergroundClient.h>			// recuperation info Wunderground
-// #include "TimeClient.h"							// gestion date heure NTP
 // #include <RemoteDebug.h>						// Telnet
 #include <EEPROM.h>									// variable en EEPROM
 // #include <EEPROMAnything.h>					// variable en EEPROM
@@ -107,14 +84,12 @@ struct config_t								// configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 100;
+const int 	 ver  = 99;
 const byte nbrVille	= 6;
 String ville[nbrVille][nbrVille] ={
 	{"          ","3014084" ,"3031848","2987914"  ,"3020035","2993728"},
 	{"          ","Hagetmau","Bompas" ,"Perpignan","Epinal" ,"Mirecourt"}
 };// 0 Weathermap ID , 1 Nom Ville
-	
-// String WUNDERGROUND_CITY;
 
 float  TensionBatterie; // batterie de l'ecran
 String texte;// texte passé pour suppression des car speciaux
@@ -141,7 +116,7 @@ int 		versoft;
 String  derjour;
 } maMeteo;
 
-// boolean UseMaMeteo = false;// utilsie data mameteo ou wunderground false
+// boolean UseMaMeteo = false;// utilise data mameteo ou wunderground false
 byte ecran 					= 0;				// ecran actif
 int  zone  					= 0;				// zone de l'ecran
 byte frcst 					= 0;				// compteur forecast affiché 
@@ -566,7 +541,7 @@ void drawCurrentWeather() {
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
 	ui.setTextAlignment(RIGHT);
-	ui.drawString(239, 135, currentWeather.description);//239,140
+	ui.drawString(239, 135, RemplaceCharSpec(currentWeather.description));//239,140
   // drawSeparator(135);
 	
 	//------------------------ test --------------------------------
@@ -583,7 +558,7 @@ void drawCurrentWeather() {
 }
 //--------------------------------------------------------------------------------//
 void drawForecast(byte seq) {
-	// draws the three forecast columns
+	/* // draws the three forecast columns
 	// seq = 0,1,2. 3 sequences de 3 jours
 	// seq = 0, j = 0  , jour  0, +1, +2
 	// seq = 1, j = 6  , jour +3, +4, +5
@@ -599,38 +574,61 @@ void drawForecast(byte seq) {
 	drawForecastDetail(95 , 165, j+2);
 	drawForecastDetail(180, 165, j+4);
 	
-  // drawSeparator(165 + 65 + 10);	
+  // drawSeparator(165 + 65 + 10);	 */
+	
+	byte j = 0;
+	if(seq == 0) j = 0;
+	if(seq == 1) j = 3;
+	if(seq == 2) j = 6;
+	tft.fillRect(0, 140, tft.width(), 80,ILI9341_BLACK); // 0,153 efface existant
+
+	drawForecastDetail(40 , 165, j);	//10
+	drawForecastDetail(120 , 165, j+1);//95
+	drawForecastDetail(200, 165, j+2);//180
 }
 //--------------------------------------------------------------------------------//
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
-	// helper for the forecast columns
-	// String weatherIcon = getMeteoconIcon(wunderground.getForecastIcon(dayIndex));
+	// forecast columns
 	tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextAlignment(CENTER);
+  ui.setTextAlignment(CENTER);//CENTER
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	time_t time = forecasts[dayIndex].observationTime + dstOffset;
   struct tm * timeinfo = localtime (&time);
-  ui.drawString(x + 25, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,3) + " " + String(timeinfo->tm_hour) + ":00");
 	
+	// Jour heure	
+	String prevheure;
+	if(timeinfo->tm_hour > 11){		
+		prevheure = String(timeinfo->tm_hour - 1);
+	}
+	else if(timeinfo->tm_hour < 10){
+		prevheure = "0";
+		prevheure +=  String(timeinfo->tm_hour - 1);	
+	}
+	else{
+		prevheure = "23";
+	}
+	
+  ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,3) + " " + prevheure + ":00");//x+25 y-15
+	
+	// Temperature
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.drawString(x + 25, y, String(forecasts[dayIndex].temp, 1) + (IS_METRIC ? "°C" : "°F"));
+  ui.drawString(x + 0, y, String(forecasts[dayIndex].temp, 1) + (IS_METRIC ? " C" : "°F"));
 	
+	// Icone
 	String weatherIcon = getMeteoconIcon(forecasts[dayIndex].icon);
-  ui.drawBmp("/mini/" + weatherIcon + extBmp, x, y + 15);
+  ui.drawBmp("/mini/" + weatherIcon + extBmp, x-30, y + 5);// x,y+10 y+15
 	
 	Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);
   
+	// Pluie
 	ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextAlignment(CENTER);
-  ui.drawString(x + 25, y + 60, String(forecasts[dayIndex].rain, 1) + (IS_METRIC ? "mm" : "in"));
-  // String day = wunderground.getForecastTitle(dayIndex).substring(0, 3);
-  // day.toUpperCase();
-  // ui.drawString(x + 25, y, day);
-
-  // ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  // ui.drawString(x + 25, y + 14, wunderground.getForecastLowTemp(dayIndex) + "|" + wunderground.getForecastHighTemp(dayIndex));
-
+	Serial.print(F("forecast pluie = ")),Serial.println(forecasts[dayIndex].rain);
+	if(forecasts[dayIndex].rain > 0){
+		ui.drawString(x + 0, y + 65, String(forecasts[dayIndex].rain, 2) + (IS_METRIC ? "mm" : "in"));
+	}
+  
 }
 //--------------------------------------------------------------------------------//
 /* void drawVille() { // conditions actuelles sur ville
@@ -767,14 +765,13 @@ void drawAstronomy() {
 	return date;
 } */
 //--------------------------------------------------------------------------------//
-/* void RemplaceCharSpec(){
+String RemplaceCharSpec(String texte){
 	// Remplacer les caracteres >127
 	// 130,136-138 	par e 101
 	// 131-134 			par a 97
 	// 135 					par c 99
 	// si é caracteres recus 195 + 169
 	
-	texte = String(wunderground.getWeatherText());
 	String textec = "";
 	// Serial.print(F("texte a convertir =")), Serial.println(texte);
 		for(byte i=0; i < texte.length();i++){	
@@ -789,9 +786,9 @@ void drawAstronomy() {
 				textec += texte[i];
 			}
 		}
-	texte = textec;
+	return textec;
 	// Serial.print(F("texte converti =")), Serial.println(texte);
-} */
+}
 //---------------------------------------------------------------------------
 boolean JourNuit(){ 
 	// determine si jour ou nuit
