@@ -88,8 +88,8 @@ const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
 const int 	 ver  = 99;
 const byte nbrVille	= 6;
 String ville[nbrVille][nbrVille] ={
-	{"          ","3014084" ,"3031848","2987914"  ,"3020035","2993728"},
-	{"          ","Hagetmau","Bompas" ,"Perpignan","Epinal" ,"Mirecourt"}
+	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
+	{"          ","Hagetmau","Bompas" ,"Epinal" ,"Mirecourt","Perpignan"}
 };// 0 Weathermap ID , 1 Nom Ville
 
 float  TensionBatterie; // batterie de l'ecran
@@ -380,15 +380,7 @@ void draw_ecran0(){// ecran principal
 		drawVille();
 	} */
 }
-//--------------------------------------------------------------------------------//
-/* void updateTime(){
-	String texte = "Maj date heure...";
-	Serial.println(texte);
-	// debug.println(texte);
-	tft.setFont(&ArialRoundedMTBold_14);
-  drawProgress(20, texte);
-  timeClient.updateTime();
-} */
+
 //--------------------------------------------------------------------------------//
 // Update the internet based information and update screen
 void updateData() {
@@ -396,10 +388,10 @@ void updateData() {
 	// -------ajouter verification Update Soft------- //
 	
 	byte API_KEY_Nbr;// selection API_KEY selon ville
-	if(config.city == 0){
+	if(config.city == 1){
 		API_KEY_Nbr = 0;
 	}
-	else if(config.city == 1 || config.city == 2){
+	else if(config.city == 2 || config.city == 5){
 		API_KEY_Nbr = 1;
 	}
 	else if(config.city == 3 || config.city == 4){
