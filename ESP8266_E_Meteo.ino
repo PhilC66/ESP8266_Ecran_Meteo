@@ -58,6 +58,7 @@ V100 18/11/2018 Migration Wunderground vers Weathermap
 #include "GfxUi.h"									// Additional UI functions
 #include "ArialRoundedMTBold_14.h"	// Fonts created by http://oleddisplay.squix.ch/
 #include "ArialRoundedMTBold_36.h"
+// #include "ArialRounded.h"
 #include <ESP8266WiFi.h>
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
@@ -933,54 +934,8 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	// tft.setFont(&ArialRoundedMTBold_14);
 	// ui.drawString(200, 283, temp);	// vitesse vent	
 	tft.setFont(&ArialRoundedMTBold_14);
-	ui.drawString(200, 283, "km/h");	// vitesse vent	 */
-	/* String dir = wunderground.getWindDir();
-	dir.toUpperCase();
-	dir.trim();
-	if	(dir == "NORD" || dir == "NORTH"){
-		ui.drawBmp("/n" + extBmp , x, y);// icone vent		
-	}
-	else if (dir == "SUD" || dir == "SOUTH"){
-		ui.drawBmp("/s" + extBmp , x, y);// icone vent
-	}
-	else if (dir == "EST" || dir == "EAST"){
-		ui.drawBmp("/e" + extBmp , x, y);// icone vent
-	}
-	else if (dir == "OUEST" || dir == "WEST"){
-		ui.drawBmp("/o" + extBmp , x, y);// icone vent
-	}
-	else if (dir == "NE" || dir == "NNE"
-				|| dir == "ENE"){
-		ui.drawBmp("/ne" + extBmp , x, y);
-	}
-	else if (dir == "SE" || dir == "ESE"
-				|| dir == "SSE"){
-		ui.drawBmp("/se" + extBmp , x, y);
-	}
-	else if (dir == "SO" || dir == "SSO"
-				|| dir == "OSO" || dir == "SW"
-				|| dir == "SSW" || dir == "WSW") {
-		ui.drawBmp("/so" + extBmp , x, y);
-	}
-	else if (dir == "NO" || dir == "NNO"
-				|| dir == "ONO" || dir == "NW"
-				|| dir == "NNW" || dir == "WNW"){
-		ui.drawBmp("/no" + extBmp , x, y);
-	}
-	else if (dir == "VARIABLE"){
-		ui.drawBmp("/variable" + extBmp , x, y);
-	}
-// Serial.println(dir);
-	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT
-	temp = String(wunderground.getWindSpeed().toFloat(),1);
-	ui.drawString(110, 300, temp);	// vitesse vent
-	temp = String(wunderground.getWindGust().toFloat(),1);
-	tft.setFont(&ArialRoundedMTBold_14);
-	ui.drawString(200, 283, temp);	// vitesse vent	
-	tft.setFont(&ArialRoundedMTBold_14);
-	ui.drawString(200, 300, "km/h");	// vitesse vent	 */
+	ui.drawString(200, 290, "km/h");	// vitesse vent	 */
+
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran2(){// ecran complement meteo pression point rosée
