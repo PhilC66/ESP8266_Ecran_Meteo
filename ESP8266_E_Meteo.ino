@@ -85,7 +85,7 @@ struct config_t								// configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 99;
+const int 	 ver  = 100;
 const byte nbrVille	= 6;
 String ville[nbrVille][nbrVille] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
@@ -435,6 +435,8 @@ void updateData() {
   float lunarMonth = 29.53;
   moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
   moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
+	Serial.print(F("MoonImage :")),Serial.println(moonAgeImage);
+	
   delete astronomy;
   astronomy = nullptr;
 	drawProgress(100, "Fin...");
@@ -559,9 +561,9 @@ void drawForecast(byte seq) {
 	if(seq == 2) j = 6;
 	tft.fillRect(0, 140, tft.width(), 80,ILI9341_BLACK); // 0,153 efface existant
 
-	drawForecastDetail(40 , 165, j);	//10
-	drawForecastDetail(120 , 165, j+1);//95
-	drawForecastDetail(200, 165, j+2);//180
+	drawForecastDetail(40  , 175, j);	//10 165
+	drawForecastDetail(120 , 175, j+1);//95 165
+	drawForecastDetail(200 , 175, j+2);//180 165
 }
 //--------------------------------------------------------------------------------//
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
@@ -585,7 +587,7 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 		prevheure = "23";
 	}
 	
-  ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,3) + " " + prevheure + ":00");//x+25 y-15
+  ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,2) + " " + prevheure + ":00");//x+25 y-15
 	
 	// Temperature
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
@@ -630,30 +632,34 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 } */
 //--------------------------------------------------------------------------------//
 void drawAstronomy() {
-	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
-	/* // draw moonphase and sunrise/set and moonrise/set
-  int moonAgeImage = 24 * wunderground.getMoonAge().toInt() / 30.0;
-	// moonAgeImage = 23;
-  ui.drawBmp("/moon" + String(moonAgeImage) + extBmp, 120 - 30, 255);
-	  
+	// draw moonphase and sunrise/set and moonrise/set
+	tft.fillRect(0, 244, tft.width(), 86,ILI9341_BLACK); // efface existant 0,234
+
+	time_t timesunrise = currentWeather.sunrise + dstOffset;
+	time_t timesunset  = currentWeather.sunset  + dstOffset;
+	
+	Serial.print(F("Moon Age :")),Serial.print(moonAge), Serial.print(",");
+	// moonAge = 24 * moonAge / 30;
+	Serial.print(24 * moonAge / 30),Serial.print(", phase :"),Serial.println(moonData.phase);
+	
+  ui.drawBmp("/moon" + String(moonAge) + extBmp, 120 - 30, 255);
+
   // ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);  
   ui.setTextAlignment(LEFT);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.drawString(20, 270, F("Soleil"));
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.drawString(20, 285, wunderground.getSunriseTime());
-  ui.drawString(20, 300, wunderground.getSunsetTime());
-	
-	// Serial.print(F("Levé   Soleil :")),Serial.println(wunderground.getSunriseTime());
-	// Serial.print(F("Couché Soleil :")),Serial.println(wunderground.getSunsetTime());
+  ui.drawString(20, 285, getTime(&timesunrise));
+	// sprintf(time_str, "%02d:%02d\n",timesunset->tm_hour, timesunset->tm_min);
+  ui.drawString(20, 300, getTime(&timesunset));
 
   ui.setTextAlignment(RIGHT);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.drawString(220, 270, F("Lune"));
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.drawString(220, 285, wunderground.getMoonriseTime());
-  ui.drawString(220, 300, wunderground.getMoonsetTime());   */
+  ui.drawString(220, 285, String(24 * moonAge / 30) + "d");
+  ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");  
 }
 
 //--------------------------------------------------------------------------------//
@@ -916,6 +922,9 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	}
 	else if(currentWeather.windDeg > 293 && currentWeather.windDeg < 339){
 		ui.drawBmp("/no" + extBmp , x, y);
+	}
+	else{
+		ui.drawBmp("/variable" + extBmp , x, y);
 	}
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
