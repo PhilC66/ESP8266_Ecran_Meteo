@@ -81,7 +81,7 @@ struct config_t								// configuration sauvée en EEPROM
 {
 	byte 		magic;							// num magique
 	byte 		city;								// numero ville
-	boolean UseMaMeteo;					// utilise data mameteo ou wunderground false
+	boolean UseMaMeteo;					// utilise data mameteo ou openweathermap false
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
@@ -115,7 +115,10 @@ float   rssi;
 String  ssid;
 int 		versoft;
 String  derjour;
-} maMeteo;
+} maMeteo;						//	données ma station meteo
+
+struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
+String FileDataJour = FileDataJour;								// Fichier en SPIFF data du jour
 
 // boolean UseMaMeteo = false;// utilise data mameteo ou wunderground false
 byte ecran 					= 0;				// ecran actif
@@ -220,8 +223,6 @@ void setup() {
 		Serial.print(F("Nouvelle ville : ")),Serial.println(ville[1][config.city]);
 	}
 	MinMajSoft = random(0,10);
-	// WUNDERGROUND_CITY = ville[0][config.city];
-	// Serial.println(WUNDERGROUND_CITY);
 
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
@@ -248,6 +249,7 @@ void setup() {
   ArduinoOTA.begin();
   SPIFFS.begin();
 	
+	
 	//WiFi.printDiag(Serial);
   
   //Uncomment if you want to update all internet resources
@@ -255,6 +257,37 @@ void setup() {
 
   // updateTime();
 	updateData();	  // load the weather information
+	
+		/* SPIFFS.remove(FileDataJour);
+		File f = SPIFFS.open(FileDataJour, "w");
+		float s1 = -10.5;
+		float s2 = +30.2;
+		f.println(s1);
+		f.println(s2);
+    f.close();  //Close file */
+	
+	if(SPIFFS.exists(FileDataJour)){
+		File f = SPIFFS.open(FileDataJour, "r");  
+		Serial.print("Reading Data from File:"),Serial.println(f.size());
+		//Data from file
+		for(int i = 0;i < 2;i++){ //Read
+			String s=f.readStringUntil('\n');
+			Serial.print(i),Serial.print(" "),Serial.println(s);
+			if(i==0)tempj.tempmin = s.toFloat();
+			if(i==1)tempj.tempmax = s.toFloat();
+		}
+		f.close();  //Close file
+		Serial.println("File Closed");
+	}
+	else{
+		Serial.println("Creating Data File:");		
+		tempj.tempmin = currentWeather.temp;
+		tempj.tempmax = currentWeather.temp;
+		Recordtempj();
+	}
+	Serial.print(F("Temp min =")),Serial.println(tempj.tempmin);
+	Serial.print(F("Temp max =")),Serial.println(tempj.tempmax);
+	
 	MesureBatterie();
 	MajSoft();	// verification si maj soft disponible
 	draw_ecran0();
@@ -310,10 +343,17 @@ void loop() {
 		drawTime();
 		lastDrew = millis();
 		Serial.print(timeinfo->tm_hour),Serial.print(":"),Serial.print(timeinfo->tm_min),Serial.print(":"),Serial.println(timeinfo->tm_sec);
-		if(String(timeinfo-> tm_hour) == "3" && String(timeinfo-> tm_min) == String(MinMajSoft)){	// Majsoft entre 03h00 et 03h10
+		if(String(timeinfo-> tm_hour) == "3" && String(timeinfo-> tm_min) == String(MinMajSoft)){	
+			// Majsoft entre 03h00 et 03h10
 			Serial.println(F("Mise a jour Soft"));
 			MajSoft();
 		}
+		if(String(timeinfo-> tm_hour) == "0" && String(timeinfo-> tm_min) == "0" && String(timeinfo-> tm_sec) == "0"){
+			// Mise à jour des data du jour
+			tempj.tempmin = currentWeather.temp;
+			tempj.tempmax = currentWeather.temp;
+			Recordtempj();
+		}			
 		MesureBatterie();	
 		if(JourNuit()){
 			Serial.println(F("Jour"));
@@ -382,10 +422,8 @@ void draw_ecran0(){// ecran principal
 }
 
 //--------------------------------------------------------------------------------//
-// Update the internet based information and update screen
 void updateData() {
-	
-	// -------ajouter verification Update Soft------- //
+	// Update the internet based information and update screen
 	
 	byte API_KEY_Nbr;// selection API_KEY selon ville
 	if(config.city == 1){
@@ -418,7 +456,18 @@ void updateData() {
   currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],ville[0][config.city]);
   delete currentWeatherClient;
   currentWeatherClient = nullptr;
-
+	boolean flagRecord = false;
+	if(currentWeather.temp < tempj.tempmin){
+		tempj.tempmin = currentWeather.temp;
+		flagRecord = true;		
+	}
+	if(currentWeather.temp > tempj.tempmax){
+		tempj.tempmax = currentWeather.temp;
+		flagRecord = true;		
+	}
+	if(flagRecord){
+		Recordtempj();
+	}
   drawProgress(70, "Maj previsions...");
   OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
   forecastClient->setMetric(IS_METRIC);
@@ -502,12 +551,28 @@ void drawCurrentWeather() {
 		ui.drawString(110, 120, String(maMeteo.temp,1));//110,125
 	}
 	else{
-		ui.drawString(110, 120, String(currentWeather.temp, 1) + (IS_METRIC ? "°C" : "°F"));//220 Temperature Wunderground
+		ui.drawString(110, 120, String(currentWeather.temp, 1));// + (IS_METRIC ? "°C" : "°F"));//220 Temperature Wunderground
 		// si pas MaMeteo dessin # rouge pour signaler
 		// ui.setTextColor(ILI9341_RED, ILI9341_BLACK);
 		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextAlignment(RIGHT);
-		ui.drawString(239, 120, "#");
+		//ui.drawString(239, 120, "#");
+		if(tempj.tempmax > 30) {													//tempmax
+			ui.setTextColor(ILI9341_RED, ILI9341_BLACK);//mettre en rouge sinon cyan
+		}
+		else{
+			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+		}
+		ui.setTextAlignment(RIGHT);
+		ui.drawString(239, 103, String(tempj.tempmax,1));//108
+	
+		if(tempj.tempmin < 0){													//tempmin
+				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
+		}
+		else{
+			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+		}	
+		ui.drawString(239, 125, String(tempj.tempmin,1));
 	}
 	
 	tft.setFont(&ArialRoundedMTBold_14);
@@ -559,7 +624,7 @@ void drawForecast(byte seq) {
 	if(seq == 0) j = 0;
 	if(seq == 1) j = 3;
 	if(seq == 2) j = 6;
-	tft.fillRect(0, 140, tft.width(), 80,ILI9341_BLACK); // 0,153 efface existant
+	tft.fillRect(0, 140, tft.width(), 100,ILI9341_BLACK); // 0,153,width,80 efface existant
 
 	drawForecastDetail(40  , 175, j);	//10 165
 	drawForecastDetail(120 , 175, j+1);//95 165
@@ -605,7 +670,12 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
   ui.setTextAlignment(CENTER);
 	Serial.print(F("forecast pluie = ")),Serial.println(forecasts[dayIndex].rain);
 	if(forecasts[dayIndex].rain > 0){
-		ui.drawString(x + 0, y + 65, String(forecasts[dayIndex].rain, 2) + (IS_METRIC ? "mm" : "in"));
+		if(forecasts[dayIndex].rain < 1){
+			ui.drawString(x + 0, y + 65, String("< 1") + (IS_METRIC ? "mm" : "in"));
+		}
+		else{
+			ui.drawString(x + 0, y + 65, String(forecasts[dayIndex].rain, 2) + (IS_METRIC ? "mm" : "in"));
+		}
 	}
   
 }
@@ -1366,4 +1436,12 @@ String getTime(time_t *timestamp) {
   char buf[6];
   sprintf(buf, "%02d:%02d", timeInfo->tm_hour, timeInfo->tm_min);
   return String(buf);
+}
+//--------------------------------------------------------------------------------//
+void Recordtempj(){
+	// Enregistre file SPIFF data du jour
+	File f = SPIFFS.open(FileDataJour, "w");
+		f.print(tempj.tempmin);
+		f.print(tempj.tempmax);
+    f.close();  //Close file
 }

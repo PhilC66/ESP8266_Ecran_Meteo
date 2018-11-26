@@ -40,9 +40,9 @@ String OPEN_WEATHER_MAP_LANGUAGE = "fr";
 const uint8_t MAX_FORECASTS = 10;
 const String WDAY_NAMES[] = {"Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"};
 const String MONTH_NAMES[] = {"Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"};
-const String SUN_MOON_TEXT[] = {"Sun", "Rise", "Set", "Moon", "Age", "Illum"};
-const String MOON_PHASES[] = {"New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
-                              "Full Moon", "Waning Gibbous", "Third quarter", "Waning Crescent"};
+// const String SUN_MOON_TEXT[] = {"Sun", "Rise", "Set", "Moon", "Age", "Illum"};
+// const String MOON_PHASES[] = {"New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
+                              // "Full Moon", "Waning Gibbous", "Third quarter", "Waning Crescent"};
 // TimeClient settings
 // Change for 12 Hour/ 24 hour style clock
 bool IS_STYLE_12HR = false;
