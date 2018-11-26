@@ -85,7 +85,7 @@ struct config_t								// configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 100;
+const int 	 ver  = 101;
 const byte nbrVille	= 6;
 String ville[nbrVille][nbrVille] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
@@ -117,6 +117,7 @@ int 		versoft;
 String  derjour;
 } maMeteo;						//	données ma station meteo
 
+byte API_KEY_Nbr;			// selection API_KEY selon ville
 struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
 String FileDataJour = "/FileDataJour.txt";								// Fichier en SPIFF data du jour
 
@@ -217,6 +218,16 @@ void setup() {
 	}
 	MinMajSoft = random(0,10);
 
+	if(config.city == 1){// selection API key en fonction de la ville
+		API_KEY_Nbr = 0;
+	}
+	else if(config.city == 2 || config.city == 5){
+		API_KEY_Nbr = 1;
+	}
+	else if(config.city == 3 || config.city == 4){
+		API_KEY_Nbr = 2;
+	}
+	
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
@@ -248,8 +259,9 @@ void setup() {
   //Uncomment if you want to update all internet resources
   //SPIFFS.format();
 
-  // updateTime();
+  updateTime();
 	updateData();	  // load the weather information
+	updatePrev();
 	
 		/* SPIFFS.remove(FileDataJour);
 		File f = SPIFFS.open(FileDataJour, "w");
@@ -288,6 +300,7 @@ void setup() {
 }
 //---------------------------------------------------------------------------
 void loop() {
+	static byte cpt = 0;	// compte nbr passage tous les 4 passages update previsions
 	char *dstAbbrev;
   time_t now = dstAdjusted.time(&dstAbbrev);
   struct tm * timeinfo = localtime (&now);
@@ -341,6 +354,7 @@ void loop() {
 			// Majsoft entre 03h00 et 03h10
 			Serial.println(F("Mise a jour Soft"));
 			MajSoft();
+			updateTime();
 		}
 		if(String(timeinfo-> tm_hour) == "0" && String(timeinfo-> tm_min) == "0" && String(timeinfo-> tm_sec) == "0"){
 			// Mise à jour des data du jour
@@ -358,15 +372,20 @@ void loop() {
 			Serial.println(F("Nuit"));
 			analogWrite(Op_BackLight,50);			// Backlight OFF 50
 		}
+		if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
+			updateData();
+			updateMinMax();
+			if(cpt == 3){
+				updatePrev();
+				cpt = 0;
+			}else{
+				cpt ++;
+			}
+			ecran = 0;
+			draw_ecran0();
+			lastDownloadUpdate = millis();
+		}
 	}
-
-	if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
-		updateData();
-		updateMinMax();
-		lastDownloadUpdate = millis();
-		ecran = 0;
-		draw_ecran0();
-  }
 		
 	ArduinoOTA.handle();	// Handle OTA update requests
 	//debug.handle();				// Debug par Telnet
@@ -421,29 +440,8 @@ void draw_ecran0(){// ecran principal
 void updateData() {
 	// Update the internet based information and update screen
 	
-	byte API_KEY_Nbr;// selection API_KEY selon ville
-	if(config.city == 1){
-		API_KEY_Nbr = 0;
-	}
-	else if(config.city == 2 || config.city == 5){
-		API_KEY_Nbr = 1;
-	}
-	else if(config.city == 3 || config.city == 4){
-		API_KEY_Nbr = 2;
-	}
-	
   tft.fillScreen(ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
-
-	drawProgress(10, "Maj Heure");
-  configTime(UTC_OFFSET * 3600, 0, NTP_SERVERS);
-  while(!time(nullptr)) {
-    Serial.print("#");
-    delay(100);
-  }
-  // calculate for time calculation how much the dst class adds.
-  dstOffset = UTC_OFFSET * 3600 + dstAdjusted.time(nullptr) - time(nullptr);
-  Serial.printf("Time difference for DST: %d\n", dstOffset);
 	
   drawProgress(50, "Maj actuelle...");
   OpenWeatherMapCurrent *currentWeatherClient = new OpenWeatherMapCurrent();
@@ -452,16 +450,6 @@ void updateData() {
   currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],ville[0][config.city]);
   delete currentWeatherClient;
   currentWeatherClient = nullptr;
-	
-  drawProgress(70, "Maj previsions...");
-  OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
-  forecastClient->setMetric(IS_METRIC);
-  forecastClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
-  uint8_t allowedHours[] = {12, 0};
-  forecastClient->setAllowedHours(allowedHours, sizeof(allowedHours));
-  forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],ville[0][config.city], MAX_FORECASTS);
-  delete forecastClient;
-  forecastClient = nullptr;
 
   drawProgress(80, "Maj astronomie...");
   Astronomy *astronomy = new Astronomy();
@@ -474,7 +462,7 @@ void updateData() {
   delete astronomy;
   astronomy = nullptr;
 	drawProgress(100, "Fin...");
-  delay(1000);
+  delay(500);
 }
 //--------------------------------------------------------------------------------//
 // Progress bar helper
@@ -556,7 +544,7 @@ void drawCurrentWeather() {
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}	
-		ui.drawString(239, 125, String(tempj.tempmin,1));
+		ui.drawString(239, 122, String(tempj.tempmin,1));//239,125
 	}
 	
 	tft.setFont(&ArialRoundedMTBold_14);
@@ -1448,4 +1436,28 @@ void updateMinMax(){
 		Serial.println(F("record data jour"));
 		flagRecord = false;
 	}
+}
+//--------------------------------------------------------------------------------//
+void updateTime(){
+	drawProgress(10, "Maj Heure");
+  configTime(UTC_OFFSET * 3600, 0, NTP_SERVERS);
+  while(!time(nullptr)) {
+    Serial.print("#");
+    delay(100);
+  }
+  // calculate for time calculation how much the dst class adds.
+  dstOffset = UTC_OFFSET * 3600 + dstAdjusted.time(nullptr) - time(nullptr);
+  Serial.printf("Time difference for DST: %d\n", dstOffset);
+}
+//--------------------------------------------------------------------------------//
+void updatePrev(){
+  drawProgress(70, "Maj previsions...");
+  OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
+  forecastClient->setMetric(IS_METRIC);
+  forecastClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+  uint8_t allowedHours[] = {12, 0};
+  forecastClient->setAllowedHours(allowedHours, sizeof(allowedHours));
+  forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],ville[0][config.city], MAX_FORECASTS);
+  delete forecastClient;
+  forecastClient = nullptr;
 }
