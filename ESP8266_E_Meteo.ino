@@ -118,7 +118,7 @@ String  derjour;
 } maMeteo;						//	données ma station meteo
 
 struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
-String FileDataJour = FileDataJour;								// Fichier en SPIFF data du jour
+String FileDataJour = "/FileDataJour.txt";								// Fichier en SPIFF data du jour
 
 // boolean UseMaMeteo = false;// utilise data mameteo ou wunderground false
 byte ecran 					= 0;				// ecran actif
@@ -150,13 +150,6 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 GfxUi ui = GfxUi(&tft);
 
 Adafruit_STMPE610 spitouch = Adafruit_STMPE610(STMPE_CS);
-
-// WebResource webResource;
-// TimeClient timeClient(UTC_OFFSET);
-
-// Set to false, if you prefere imperial/inches, Fahrenheit
-// WundergroundClient wunderground(IS_METRIC);
-
 
 OpenWeatherMapCurrentData currentWeather;
 OpenWeatherMapForecastData forecasts[MAX_FORECASTS];
@@ -266,18 +259,17 @@ void setup() {
 		f.println(s2);
     f.close();  //Close file */
 	
-	if(SPIFFS.exists(FileDataJour)){
+	if(SPIFFS.exists(FileDataJour)){ // Lecture fichier data jour
 		File f = SPIFFS.open(FileDataJour, "r");  
-		Serial.print("Reading Data from File:"),Serial.println(f.size());
-		//Data from file
+		// Serial.print("Reading Data from File:"),Serial.println(f.size());
 		for(int i = 0;i < 2;i++){ //Read
 			String s=f.readStringUntil('\n');
 			Serial.print(i),Serial.print(" "),Serial.println(s);
 			if(i==0)tempj.tempmin = s.toFloat();
 			if(i==1)tempj.tempmax = s.toFloat();
 		}
-		f.close();  //Close file
-		Serial.println("File Closed");
+		f.close();
+		// Serial.println("File Closed");
 	}
 	else{
 		Serial.println("Creating Data File:");		
@@ -285,8 +277,10 @@ void setup() {
 		tempj.tempmax = currentWeather.temp;
 		Recordtempj();
 	}
+	updateMinMax();
 	Serial.print(F("Temp min =")),Serial.println(tempj.tempmin);
 	Serial.print(F("Temp max =")),Serial.println(tempj.tempmax);
+	
 	
 	MesureBatterie();
 	MajSoft();	// verification si maj soft disponible
@@ -352,6 +346,7 @@ void loop() {
 			// Mise à jour des data du jour
 			tempj.tempmin = currentWeather.temp;
 			tempj.tempmax = currentWeather.temp;
+			Serial.println(F("record data jour 00H00"));
 			Recordtempj();
 		}			
 		MesureBatterie();	
@@ -367,6 +362,7 @@ void loop() {
 
 	if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
 		updateData();
+		updateMinMax();
 		lastDownloadUpdate = millis();
 		ecran = 0;
 		draw_ecran0();
@@ -456,18 +452,7 @@ void updateData() {
   currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],ville[0][config.city]);
   delete currentWeatherClient;
   currentWeatherClient = nullptr;
-	boolean flagRecord = false;
-	if(currentWeather.temp < tempj.tempmin){
-		tempj.tempmin = currentWeather.temp;
-		flagRecord = true;		
-	}
-	if(currentWeather.temp > tempj.tempmax){
-		tempj.tempmax = currentWeather.temp;
-		flagRecord = true;		
-	}
-	if(flagRecord){
-		Recordtempj();
-	}
+	
   drawProgress(70, "Maj previsions...");
   OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
   forecastClient->setMetric(IS_METRIC);
@@ -501,9 +486,8 @@ void drawProgress(uint8_t percentage, String text) {
   ui.drawProgressBar(10, 165, 240 - 20, 15, percentage, ILI9341_WHITE, ILI9341_BLUE);
 }
 //--------------------------------------------------------------------------------//
-// draws the clock
 void drawTime() {
-	
+	// draws the clock
 	char time_str[11];
   char *dstAbbrev;
   time_t now = dstAdjusted.time(&dstAbbrev);
@@ -601,7 +585,7 @@ void drawCurrentWeather() {
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
 	ui.setTextAlignment(RIGHT);
-	ui.drawString(239, 135, RemplaceCharSpec(currentWeather.description));//239,140
+	ui.drawString(239, 137, RemplaceCharSpec(currentWeather.description));//239,140
   // drawSeparator(135);
 	
 	//------------------------ test --------------------------------
@@ -618,8 +602,7 @@ void drawCurrentWeather() {
 }
 //--------------------------------------------------------------------------------//
 void drawForecast(byte seq) {
-	// draws the three forecast columns
-		
+	// draws the three forecast columns		
 	byte j = 0;
 	if(seq == 0) j = 0;
 	if(seq == 1) j = 3;
@@ -1010,7 +993,7 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran2(){// ecran complement meteo pression point rosée
-	/* String temp;
+	String temp;
 	tft.fillScreen(ILI9341_BLACK);
 	drawTime();
 	ui.drawBmp("/baro" + extBmp, 20, 70);									// icone barometre
@@ -1021,12 +1004,12 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 		temp = String(maMeteo.pression,0);
 	}
 	else{
-		temp = String(wunderground.getPressure().toFloat(),0);
+		temp = String(currentWeather.pressure);
 	}
 	ui.drawString(110, 125, temp);	// pression atmo
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(LEFT);	
-	ui.drawString(200, 125, " mb");
+	ui.drawString(200, 125, " hPa");
 	
 	ui.drawBmp("/hygro" + extBmp, 20, 160);									// icone Hygrometre
 	tft.setFont(&ArialRoundedMTBold_36);
@@ -1036,7 +1019,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 		temp = String(maMeteo.humid,0);
 	}
 	else{
-		temp = String(wunderground.getHumidity().toFloat(),0);
+		temp = String(currentWeather.humidity);
 	}	
 	ui.drawString(110, 212, temp);			// rh
 	tft.setFont(&ArialRoundedMTBold_14);
@@ -1051,13 +1034,13 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 		temp = String(dewPointFast(maMeteo.temp, maMeteo.humid),1);
 	}
 	else{
-		temp = String(wunderground.getDewPoint().toFloat(),1);
+		temp = String(dewPointFast(currentWeather.temp, currentWeather.humidity),1);
 	}	
 	ui.drawString(110, 300, temp);			// ptr
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(LEFT);	
 	ui.drawString(200, 300, " C");
- */
+
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran3(){// ecran systeme station
@@ -1441,7 +1424,28 @@ String getTime(time_t *timestamp) {
 void Recordtempj(){
 	// Enregistre file SPIFF data du jour
 	File f = SPIFFS.open(FileDataJour, "w");
-		f.print(tempj.tempmin);
-		f.print(tempj.tempmax);
+		f.println(tempj.tempmin);
+		f.println(tempj.tempmax);
     f.close();  //Close file
+}
+//--------------------------------------------------------------------------------//
+void updateMinMax(){
+	boolean flagRecord = false;
+	if(currentWeather.temp < tempj.tempmin){
+		Serial.print(F("Temp min act =")),Serial.println(currentWeather.temp);
+		Serial.print(F("Temp min rec =")),Serial.println(tempj.tempmin);
+		tempj.tempmin = currentWeather.temp;
+		flagRecord = true;		
+	}
+	if(currentWeather.temp > tempj.tempmax){
+		Serial.print(F("Temp max act =")),Serial.println(currentWeather.temp);
+		Serial.print(F("Temp max rec =")),Serial.println(tempj.tempmax);
+		tempj.tempmax = currentWeather.temp;
+		flagRecord = true;		
+	}
+	if(flagRecord){
+		Recordtempj();
+		Serial.println(F("record data jour"));
+		flagRecord = false;
+	}
 }
