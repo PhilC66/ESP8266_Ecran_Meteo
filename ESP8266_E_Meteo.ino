@@ -260,8 +260,8 @@ void setup() {
   //SPIFFS.format();
 
   updateTime();
-	updateData();	  // load the weather information
-	updatePrev();
+	updateData();
+	updateForecast();
 	
 		/* SPIFFS.remove(FileDataJour);
 		File f = SPIFFS.open(FileDataJour, "w");
@@ -376,7 +376,7 @@ void loop() {
 			updateData();
 			updateMinMax();
 			if(cpt == 3){
-				updatePrev();
+				updateForecast();
 				cpt = 0;
 			}else{
 				cpt ++;
@@ -530,32 +530,27 @@ void drawCurrentWeather() {
   
   // Weather Ville
   tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+  ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
   ui.setTextAlignment(RIGHT);
 	ui.drawString(239, 85, ville[1][config.city]);// 239,90
 
-	// Weather temperatur
-  tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT
-	if(config.UseMaMeteo){
-		ui.drawString(110, 120, String(maMeteo.temp,1));//110,125
-	}
-	else{
+	// Weather temperature  
+	if(ville[2][config.city] == "0"){ // ville sans station meteo perso
+		tft.setFont(&ArialRoundedMTBold_36);
+		ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+		ui.setTextAlignment(LEFT);//RIGHT
 		ui.drawString(110, 120, String(currentWeather.temp, 1));// + (IS_METRIC ? "°C" : "°F"));//220 Temperature Wunderground
-		// si pas MaMeteo dessin # rouge pour signaler
-		// ui.setTextColor(ILI9341_RED, ILI9341_BLACK);
 		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextAlignment(RIGHT);
-		//ui.drawString(239, 120, "#");
+		// tempj.tempmin = -10;
 		if(tempj.tempmax > 30) {													//tempmax
-			ui.setTextColor(ILI9341_RED, ILI9341_BLACK);//mettre en rouge sinon cyan
+			ui.setTextColor(ILI9341_MAGENTA, ILI9341_BLACK);//mettre en rouge sinon cyan
 		}
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}
 		ui.setTextAlignment(RIGHT);
-		ui.drawString(239, 103, String(tempj.tempmax,1));//108
+		ui.drawString(239, 100, String(tempj.tempmax,1));//108
 	
 		if(tempj.tempmin < 0){													//tempmin
 				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
@@ -565,29 +560,36 @@ void drawCurrentWeather() {
 		}	
 		ui.drawString(239, 122, String(tempj.tempmin,1));//239,125
 	}
-	
-	tft.setFont(&ArialRoundedMTBold_14);
-	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  // maMeteo.tempmax = 45.2;
-	if(config.UseMaMeteo){
+	else if(config.UseMaMeteo && ville[2][config.city] == "1"){ // ville avec station meteo perso
+		tft.setFont(&ArialRoundedMTBold_36);
+		ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+		ui.setTextAlignment(LEFT);//RIGHT
+		ui.drawString(110, 120, String(maMeteo.temp,1));//110,125
+		
+		// maMeteo.tempmax = 45.2;
 		if(maMeteo.tempmax > 30) {													//tempmax
-			ui.setTextColor(ILI9341_RED, ILI9341_BLACK);//mettre en rouge sinon cyan
+			ui.setTextColor(ILI9341_MAGENTA, ILI9341_BLACK);//mettre en rouge sinon cyan
 		}
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}
+		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextAlignment(RIGHT);
-		ui.drawString(239, 103, String(maMeteo.tempmax,1));//108
+		ui.drawString(239, 100, String(maMeteo.tempmax,1));//108
 	
-	// maMeteo.tempmin = -25.5;	
+		// maMeteo.tempmin = -25.5;	
 		if(maMeteo.tempmin < 0){													//tempmin
 				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
 		}
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}	
-		ui.drawString(239, 125, String(maMeteo.tempmin,1));
+		ui.drawString(239, 122, String(maMeteo.tempmin,1));
+	}else if(!config.UseMaMeteo && ville[2][config.city] == "1"){
+		ui.setTextColor(ILI9341_MAGENTA, ILI9341_BLACK);
+		ui.drawString(239, 120, "#");
 	}
+	
 	// Weather Text
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
@@ -893,7 +895,7 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	y=70;//65
 	float pluie1h;
 	float pluie24h;
-	if(config.UseMaMeteo){ // pas d'info pluie avec API Openweathermap
+	if(config.UseMaMeteo && ville[2][config.city] == "1" ){ // pas d'info pluie avec API Openweathermap
 		pluie1h  = maMeteo.rain1h;
 		pluie24h = maMeteo.rain24h;
 		
@@ -1007,7 +1009,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT
-	if(config.UseMaMeteo){
+	if(config.UseMaMeteo && ville[2][config.city] == "1"){
 		temp = String(maMeteo.pression,0);
 	}
 	else{
@@ -1022,7 +1024,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT
-	if(config.UseMaMeteo){
+	if(config.UseMaMeteo && ville[2][config.city] == "1"){
 		temp = String(maMeteo.humid,0);
 	}
 	else{
@@ -1037,7 +1039,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT	
-	if(config.UseMaMeteo){
+	if(config.UseMaMeteo && ville[2][config.city] == "1"){
 		temp = String(dewPointFast(maMeteo.temp, maMeteo.humid),1);
 	}
 	else{
@@ -1353,33 +1355,25 @@ void draw_ecran(byte i){
 	// i = ecran 
 	switch(i){
 		case 0:
-		draw_ecran0();
-		break;
-	}
-	switch(i){
+			draw_ecran0();
+			break;
 		case 1:
-		draw_ecran1();
-		break;
-	}
-	switch(i){
+			draw_ecran1();
+			break;
 		case 2:
-		draw_ecran2();
-		break;
-	}
-	switch(i){
+			draw_ecran2();
+			break;
 		case 3:
-		if(config.UseMaMeteo){
-			draw_ecran3();
-			break;
-		}
-		else{//suivant
-			break;
-		}		
-	}
-	switch(i){
+			if(config.UseMaMeteo && ville[2][config.city] == "1"){
+				draw_ecran3();
+				break;
+			}
+			else{//suivant
+				break;
+			}
 		case 4:
-		draw_ecran4();
-		break;
+			draw_ecran4();
+			break;			
 	}
 }
 //----------------------------------------------------------------------------------------------//
@@ -1422,7 +1416,6 @@ void MajSoft() {
 String getTime(time_t *timestamp) {
   // struct tm *timeInfo = gmtime(timestamp);
 	struct tm *timeInfo = localtime(timestamp);
-  
   char buf[6];
   sprintf(buf, "%02d:%02d", timeInfo->tm_hour, timeInfo->tm_min);
   return String(buf);
@@ -1469,7 +1462,7 @@ void updateTime(){
   Serial.printf("Time difference for DST: %d\n", dstOffset);
 }
 //--------------------------------------------------------------------------------//
-void updatePrev(){
+void updateForecast(){
   drawProgress(70, "Maj previsions...");
   OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
   forecastClient->setMetric(IS_METRIC);
