@@ -87,10 +87,11 @@ struct config_t								// configuration sauvée en EEPROM
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
 const int 	 ver  = 101;
 const byte nbrVille	= 6;
-String ville[nbrVille][nbrVille] ={
+String ville[3][nbrVille] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
-	{"          ","Hagetmau","Bompas" ,"Epinal" ,"Mirecourt","Perpignan"}
-};// 0 Weathermap ID , 1 Nom Ville
+	{"          ","Hagetmau","Bompas" ,"Epinal" ,"Mirecourt","Perpignan"},
+	{"0"         ,"1"       ,"0"      ,"0"      ,"0"        ,"0"}
+};// 0 Weathermap ID , 1 Nom Ville, 2 0/1 Station perso liée
 
 float  TensionBatterie; // batterie de l'ecran
 String texte;// texte passé pour suppression des car speciaux
@@ -216,9 +217,9 @@ void setup() {
 		delay(100);
 		Serial.print(F("Nouvelle ville : ")),Serial.println(ville[1][config.city]);
 	}
-	MinMajSoft = random(0,10);
+	MinMajSoft = random(0,10);	// determine la minute mise a jour pour eviter collision
 
-	if(config.city == 1){// selection API key en fonction de la ville
+	if(config.city == 1){		// selection API key en fonction de la ville
 		API_KEY_Nbr = 0;
 	}
 	else if(config.city == 2 || config.city == 5){
@@ -252,7 +253,6 @@ void setup() {
   ArduinoOTA.setHostname((const char *)hostname.c_str());
   ArduinoOTA.begin();
   SPIFFS.begin();
-	
 	
 	//WiFi.printDiag(Serial);
   
@@ -385,6 +385,9 @@ void loop() {
 			draw_ecran0();
 			lastDownloadUpdate = millis();
 		}
+		if(!UseMaMeteo && ville[2][config.city] == "1"){// V25 nouvelle tentative lecture Mameteo
+			lanceMameteo();
+		}
 	}
 		
 	ArduinoOTA.handle();	// Handle OTA update requests
@@ -435,13 +438,29 @@ void draw_ecran0(){// ecran principal
 		drawVille();
 	} */
 }
-
+//--------------------------------------------------------------------------------//
+void lanceMameteo(){
+	byte cpt = 0;	// V17
+	do{
+		Mameteo();
+		if(UseMaMeteo){	// si lecture ok on sort
+			Serial.print(F("nbr lecture Mameteo:")),Serial.println(cpt);
+			cpt = 5;			// V21
+		}
+		cpt++;					// si non on boucles
+	}while (cpt < 5);	// V21
+}
 //--------------------------------------------------------------------------------//
 void updateData() {
 	// Update the internet based information and update screen
 	
   tft.fillScreen(ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
+	
+	if(ville[2][config.city] == "1"){
+		drawProgress(40, "Maj MaMeteo...");
+		lanceMameteo();
+	}
 	
   drawProgress(50, "Maj actuelle...");
   OpenWeatherMapCurrent *currentWeatherClient = new OpenWeatherMapCurrent();
