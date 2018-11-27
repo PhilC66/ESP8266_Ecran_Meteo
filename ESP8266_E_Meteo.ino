@@ -40,8 +40,6 @@ il ne faut pas prendre dernier " ou dernier :
 // il faut progresser dans les datas jusqu'a la fin
 ou utiliser JSON decode
 
-
-
 -------------------------------------------------------------*/
 
 /*
