@@ -424,7 +424,7 @@ void lanceMameteo(){
 	do{
 		Mameteo();
 		if(config.UseMaMeteo){	// si lecture ok on sort
-			Serial.print(F("nbr lecture Mameteo:")),Serial.println(cpt);
+			// Serial.print(F("nbr lecture Mameteo:")),Serial.println(cpt);
 			cpt = 5;
 		}
 		cpt++;					// si non on boucles
@@ -456,7 +456,7 @@ void updateData() {
   float lunarMonth = 29.53;
   moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
   moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
-	Serial.print(F("MoonImage :")),Serial.println(moonAgeImage);
+	// Serial.print(F("MoonImage :")),Serial.println(moonAgeImage);
 	
   delete astronomy;
   astronomy = nullptr;
@@ -491,7 +491,7 @@ void drawTime() {
   tft.setFont(&ArialRoundedMTBold_36);
 	sprintf(time_str, "%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min);
   ui.drawString(120, 56, time_str);
-	// Serial.println(time_str);
+	Serial.println(time_str);
 	ui.setTextAlignment(RIGHT);
   ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
@@ -506,7 +506,7 @@ void drawCurrentWeather() {
 	// Weather Icon
 	String weatherIcon = getMeteoconIcon(currentWeather.icon);
 	ui.drawBmp("/" + weatherIcon + extBmp, 0, 55);
-	Serial.print(F("Icone = ")),Serial.println(weatherIcon);
+	// Serial.print(F("Icone = ")),Serial.println(weatherIcon);
   
   // Weather Ville
   tft.setFont(&ArialRoundedMTBold_14);
@@ -634,13 +634,13 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 	String weatherIcon = getMeteoconIcon(forecasts[dayIndex].icon);
   ui.drawBmp("/mini/" + weatherIcon + extBmp, x-30, y + 5);// x,y+10 y+15
 	
-	Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);
+	// Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);
   
 	// Pluie
 	ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextAlignment(CENTER);
-	Serial.print(F("forecast pluie = ")),Serial.println(forecasts[dayIndex].rain);
+	// Serial.print(F("forecast pluie = ")),Serial.println(forecasts[dayIndex].rain);
 	if(forecasts[dayIndex].rain > 0){
 		if(forecasts[dayIndex].rain < 1){
 			ui.drawString(x + 0, y + 65, String("< 1") + (IS_METRIC ? "mm" : "in"));
@@ -860,7 +860,7 @@ void ecrirevaleur(String var, int j) {
 	if (j == 16) maMeteo.ssid    	= var;
 	if (j == 17) maMeteo.versoft 	= var.toInt();
 	
-	Serial.print(F("var=")), Serial.print(j), Serial.print(";"),Serial.print(var), Serial.print(";"), Serial.println(varfloat);
+	// Serial.print(F("var=")), Serial.print(j), Serial.print(";"),Serial.print(var), Serial.print(";"), Serial.println(varfloat);
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran1(){// ecran complement meteo Pluie/Vent
@@ -989,10 +989,8 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	temp = String(currentWeather.windSpeed/1000*3600,1);
 	ui.drawString(110, 300, temp);	// vitesse vent
 	temp = String(currentWeather.windDeg,1);
-	// tft.setFont(&ArialRoundedMTBold_14);
-	// ui.drawString(200, 283, temp);	// vitesse vent	
 	tft.setFont(&ArialRoundedMTBold_14);
-	ui.drawString(200, 290, "km/h");	// vitesse vent	 */
+	ui.drawString(200, 290, "km/h");	// vitesse vent
 
 }
 //----------------------------------------------------------------------------------------------//
@@ -1170,8 +1168,8 @@ void draw_ecran41(byte zzone){// partie basse ecran 4
 	if (zzone == 3){
 		if(numlign < nbrVille - 1) numlign ++;
 	}
-	Serial.print(F("zzone :")),Serial.println(zzone);
-	Serial.print(F("numligne :")),Serial.println(numlign);
+	// Serial.print(F("zzone :")),Serial.println(zzone);
+	// Serial.print(F("numligne :")),Serial.println(numlign);
 	
 	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
 	ui.drawBmp("/s" + extBmp , 20 , 245);// icone vent sud 
@@ -1415,20 +1413,20 @@ void Recordtempj(){
 void updateMinMax(){
 	boolean flagRecord = false;
 	if(currentWeather.temp < tempj.tempmin){
-		Serial.print(F("Temp min act =")),Serial.println(currentWeather.temp);
-		Serial.print(F("Temp min rec =")),Serial.println(tempj.tempmin);
+		// Serial.print(F("Temp min act =")),Serial.println(currentWeather.temp);
+		// Serial.print(F("Temp min rec =")),Serial.println(tempj.tempmin);
 		tempj.tempmin = currentWeather.temp;
 		flagRecord = true;		
 	}
 	if(currentWeather.temp > tempj.tempmax){
-		Serial.print(F("Temp max act =")),Serial.println(currentWeather.temp);
-		Serial.print(F("Temp max rec =")),Serial.println(tempj.tempmax);
+		// Serial.print(F("Temp max act =")),Serial.println(currentWeather.temp);
+		// Serial.print(F("Temp max rec =")),Serial.println(tempj.tempmax);
 		tempj.tempmax = currentWeather.temp;
 		flagRecord = true;		
 	}
 	if(flagRecord){
 		Recordtempj();
-		Serial.println(F("record data jour"));
+		// Serial.println(F("record data jour"));
 		flagRecord = false;
 	}
 }
@@ -1442,7 +1440,7 @@ void updateTime(){
   }
   // calculate for time calculation how much the dst class adds.
   dstOffset = UTC_OFFSET * 3600 + dstAdjusted.time(nullptr) - time(nullptr);
-  Serial.printf("Time difference for DST: %d\n", dstOffset);
+  // Serial.printf("Time difference for DST: %d\n", dstOffset);
 }
 //--------------------------------------------------------------------------------//
 void updateForecast(){
