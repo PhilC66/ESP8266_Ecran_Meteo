@@ -18,9 +18,6 @@ SOFTWARE.
 See more at http://blog.squix.ch
 */
 
-// Parametres site perso
-// #define monSite "philippe.co.nf"		//Site internet perso
-
 #include <simpleDSTadjust.h>
 // Setup
 const int UPDATE_INTERVAL_SECS = 15 * 60;  // Update every 15 minutes
@@ -52,32 +49,10 @@ bool IS_STYLE_12HR = false;
 struct dstRule StartRule	= {"CEST", Last, Sun, Mar, 2, 3600}; // Central European Summer Time = UTC/GMT +2 hours
 struct dstRule EndRule		= {"CET" , Last, Sun, Oct, 2, 0};    // Central European Time = UTC/GMT +1 hour
 
-#define NTP_SERVERS "0.fr.pool.ntp.org", "1.ch.pool.ntp.org", "2.ch.pool.ntp.org"
+#define NTP_SERVERS "0.fr.pool.ntp.org", "1.ch.pool.ntp.org", "2.us.pool.ntp.org"
 // #define NTP_SERVERS "us.pool.ntp.org", "time.nist.gov", "pool.ntp.org"
 
-// Wunderground Settings 2x API_KEY pour limiter le nbr de connexions journalieres
-// WUNDERGRROUND_API_KEY[0] pour Bompas et Epinal
-// WUNDERGRROUND_API_KEY[1] pour Hagetmau
 const boolean IS_METRIC = true;
-// const String WUNDERGRROUND_API_KEY[2]  = {"895400f07e245903","6918f1cfa03b73fa"};
-// const String WUNDERGRROUND_LANGUAGE = "FR";
-// const String WUNDERGROUND_COUNTRY   = "FR";
-// const String WUNDERGROUND_CITY      = "Hagetmau"; 
-// String WUNDERGROUND_CITY      = "zmw:00000.122.07747"; // Bompas 66
-
-//Thingspeak Settings
-// const String THINGSPEAK_CHANNEL_ID = "67284";
-// const String THINGSPEAK_API_READ_KEY = "L2VIW20QVNZJBLAK";
-
-// const char*  THINGSPEAK_SERVER				= "api.thingspeak.com";
-// const String THINGSPEAK_CHANNEL_ID    = "327155";
-// const String THINGSPEAK_API_READ_KEY  = "FJYWLE44O7DIMFE5";
-// const String THINGSPEAK_API_WRITE_KEY = "SILTKVJM6Y10VKE0";
-
-
-// List, so that the downloader knows what to fetch
-//																			0								1							2						3						4				5					6				7				8					9						10							11						12					13			14			15		16				17					18						19
-// String wundergroundIcons [] = {"chanceflurries","chancerain","chancesleet","chancesnow","clear","cloudy","flurries","fog","hazy","mostlycloudy","mostlysunny","partlycloudy","partlysunny","rain","sleet","snow","sunny","tstorms","chancetstorms","unknown"};
 
 const char* getMeteoconIcon(String iconText) {	
 	if (iconText == "01d")	return "clear";

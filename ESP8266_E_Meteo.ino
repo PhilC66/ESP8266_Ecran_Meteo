@@ -15,8 +15,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-See more at http://blog.squix.ch
+See more at http://blog.squix.ch , https://thingpulse.com
 */
+
 /* 320x240 */
 /* Pin out de l'ESP8266
 0 	TFT CS
@@ -41,7 +42,6 @@ il ne faut pas prendre dernier " ou dernier :
 ou utiliser JSON decode
 
 -------------------------------------------------------------*/
-
 /*
 V100 18/11/2018 Migration Wunderground vers Weathermap
 */
@@ -56,7 +56,6 @@ V100 18/11/2018 Migration Wunderground vers Weathermap
 #include "GfxUi.h"									// Additional UI functions
 #include "ArialRoundedMTBold_14.h"	// Fonts created by http://oleddisplay.squix.ch/
 #include "ArialRoundedMTBold_36.h"
-// #include "ArialRounded.h"
 #include <ESP8266WiFi.h>
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
@@ -69,7 +68,6 @@ V100 18/11/2018 Migration Wunderground vers Weathermap
 #include <OpenWeatherMapCurrent.h>
 #include <OpenWeatherMapForecast.h>
 #include <Astronomy.h>
-// #include <RemoteDebug.h>						// Telnet
 #include <EEPROM.h>									// variable en EEPROM
 // #include <EEPROMAnything.h>					// variable en EEPROM
 // #include <SD.h>	// SD card
@@ -92,7 +90,7 @@ String ville[3][nbrVille] ={
 };// 0 Weathermap ID , 1 Nom Ville, 2 0/1 Station perso liée
 
 float  TensionBatterie; // batterie de l'ecran
-String texte;// texte passé pour suppression des car speciaux
+// String texte;// texte passé pour suppression des car speciaux
 String extBmp = ".bmp";
 
 struct t {
@@ -117,10 +115,10 @@ String  derjour;
 } maMeteo;						//	données ma station meteo
 
 byte API_KEY_Nbr;			// selection API_KEY selon ville
-struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
-String FileDataJour = "/FileDataJour.txt";								// Fichier en SPIFF data du jour
 
-// boolean UseMaMeteo = false;// utilise data mameteo ou wunderground false
+struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
+String FileDataJour = "/FileDataJour.txt";				// Fichier en SPIFF data du jour
+
 byte ecran 					= 0;				// ecran actif
 int  zone  					= 0;				// zone de l'ecran
 byte frcst 					= 0;				// compteur forecast affiché 
@@ -142,10 +140,6 @@ uint8_t moonAge = 0;
 #define TS_MAXX 3800
 #define TS_MAXY 4000
 
-/*****************************
- * Important: see settings.h to configure your settings!!!
- * ***************************/
-
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 GfxUi ui = GfxUi(&tft);
 
@@ -158,33 +152,30 @@ Astronomy::MoonData moonData;
 
 //declaring prototypes
 void configModeCallback (WiFiManager *myWiFiManager);
-
 void updateData();
 void drawProgress(uint8_t percentage, String text);
 void drawTime();
 void drawCurrentWeather();
 void drawForecast(byte frcst);
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex);
-// String getMeteoconIcon(String iconText);
 void drawAstronomy();
 void drawCurrentWeatherDetail();
 // void drawLabelValue(uint8_t line, String label, String value);
 // void drawForecastTable(uint8_t start);
 String getTime(time_t *timestamp);
 const char* getMeteoconIcon(String iconText);
+// String getMeteoconIcon(String iconText);
 boolean JourNuit();
-// const char* getMiniMeteoconIconFromProgmem(String iconText);
-																			// void drawSeparator(uint16_t y);
-																			// void sleepNow(int wakeup);
+/* const char* getMiniMeteoconIconFromProgmem(String iconText);
+																			void drawSeparator(uint16_t y);
+																			void sleepNow(int wakeup); */
 void MesureBatterie();
 void GereEcran();
 void draw_ecran(byte i);
 void MajSoft();
 // void drawVille();
 
-// RemoteDebug Debug;
 //WiFiManager
-//Local intialization. Once its business is done, there is no need to keep it around
 WiFiManager wifiManager;
 
 WiFiClient client;
@@ -193,10 +184,7 @@ void setup() {
 	pinMode(Op_BackLight, OUTPUT);
 	analogWrite(Op_BackLight,1023);// Backlight ON
   Serial.begin(115200);
-	
-	//debug.begin("ESP_Meteo_Display");
-	// //debug.begin();
-  //debug.setResetCmdEnabled(true);
+
   if (! spitouch.begin()) {
     Serial.println("STMPE not found?");
   }
@@ -209,7 +197,6 @@ void setup() {
 		config.magic 			= defaultmagic;
 		config.city 			= 1;
 		config.UseMaMeteo = false;
-		// EcrireEEPROM(0);
 		EEPROM.put(0,config);
 		EEPROM.commit();
 		delay(100);
@@ -311,10 +298,7 @@ void loop() {
 		zone = 0;	
 		int x = tft.width() - p.x;
 		int y = p.y;
-		//debug.print(F("tft.height =")),//debug.print(tft.height());
-		//debug.print(F(",px =")),//debug.print(p.x);
-		//debug.print(F(",x =")),//debug.print(x);
-		//debug.print(F(",y =")),//debug.println(y);
+		
 		//	calcul quelle zone a ete touché
 		if(y > 0 && y <= 62){//0-60
 			Serial.println(F("zone Titre"));
@@ -335,7 +319,7 @@ void loop() {
 		if (x > 0   && x <= 80)  zone *=1;
 		if (x > 80  && x <= 160) zone *=10;
 		if (x > 160 && x <= 240) zone *=100;
-		//debug.print(F("zone=")),//debug.println(zone);
+		
 		GereEcran();			
 		
 		//vider buffer
@@ -389,7 +373,6 @@ void loop() {
 	}
 		
 	ArduinoOTA.handle();	// Handle OTA update requests
-	//debug.handle();				// Debug par Telnet
 }
 //--------------------------------------------------------------------------------//
 int moyenneAnalogique(){	// calcul moyenne 10 mesures consécutives
@@ -404,7 +387,6 @@ int moyenneAnalogique(){	// calcul moyenne 10 mesures consécutives
 //--------------------------------------------------------------------------------//
 void MesureBatterie(){
 	TensionBatterie = map(moyenneAnalogique(), 0, 1023, 0, 11558);
-	//debug.print (F("Tension Batterie = ")),//debug.println (TensionBatterie);
 	Serial.print(F("Tension Batterie = ")),Serial.println(TensionBatterie);
 }
 //--------------------------------------------------------------------------------//
@@ -878,7 +860,6 @@ void ecrirevaleur(String var, int j) {
 	if (j == 16) maMeteo.ssid    	= var;
 	if (j == 17) maMeteo.versoft 	= var.toInt();
 	
-  //debug.print(F("var=")),  //debug.print(j),  //debug.print(";"),  //debug.println(varfloat);
 	Serial.print(F("var=")), Serial.print(j), Serial.print(";"),Serial.print(var), Serial.print(";"), Serial.println(varfloat);
 }
 //----------------------------------------------------------------------------------------------//
@@ -1087,7 +1068,6 @@ void draw_ecran3(){// ecran systeme station
 	temp += String(maMeteo.versoft);
 	ui.setTextAlignment(LEFT);
 	ui.drawString(10, 250, temp);
-	// //debug.print("ver station = "), //debug.println(maMeteo.versoft);
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);	
 	temp = "Parametres Station Meteo";
 	ui.drawString(20, 300, temp);
@@ -1297,7 +1277,6 @@ void GereEcran(){
 				else{
 					frcst = 2;
 				}
-				//debug.print(F("frcst =")),//debug.println(frcst);
 				drawForecast(frcst);
 			}
 			break;
@@ -1314,7 +1293,6 @@ void GereEcran(){
 				else{
 					frcst = 0;
 				}
-				//debug.print(F("frcst =")),//debug.println(frcst);
 				drawForecast(frcst);
 			}	
 			break;
@@ -1377,7 +1355,6 @@ void draw_ecran(byte i){
 //----------------------------------------------------------------------------------------------//
 void MajSoft() {
   //////////////////////////////cherche si mise à jour dispo et maj///////////////////////////////////////
-  //debug.print(F("Vérification si une mise à jour est disponible ? "));
   
   String Fichier = "http://";
   Fichier += monSite;
@@ -1385,7 +1362,6 @@ void MajSoft() {
   Fichier += soft;
   Fichier += String (ver + 1); // cherche version actuelle + 1
   Fichier += ".bin";
-  //debug.println(Fichier);
   t_httpUpdate_return ret = ESPhttpUpdate.update(Fichier);
   switch (ret) {
     case HTTP_UPDATE_FAILED:
@@ -1394,22 +1370,14 @@ void MajSoft() {
       // messageMQTT = "Pas de Maj Soft";
       break;
     case HTTP_UPDATE_NO_UPDATES:
-      //debug.println(F("HTTP_UPDATE_NO_UPDATES"));
+      //Serial.println(F("HTTP_UPDATE_NO_UPDATES"));
       break;
     case HTTP_UPDATE_OK:
-      //debug.println(F("HTTP_UPDATE_OK"));
+      //Serial.println(F("HTTP_UPDATE_OK"));
       break;
   }
 }
-//---------------------------------------------------------------------------
-/* void EcrireEEPROM(byte adr){
-	// while (!eeprom_is_ready());
-	int longueur = EEPROM_writeAnything(adr, config);	// ecriture des valeurs par defaut
-	delay(10);
-	EEPROM_readAnything(0, config);
-	Serial.print(ville[1][config.city]);
-	Serial.print(F("longEEPROM=")),Serial.println(longueur);
-} */
+
 //--------------------------------------------------------------------------------//
 String getTime(time_t *timestamp) {
   // struct tm *timeInfo = gmtime(timestamp);
