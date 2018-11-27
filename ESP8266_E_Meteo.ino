@@ -411,6 +411,7 @@ void draw_ecran0(){// ecran principal
   drawForecast(0);
 	drawAstronomy();
 	
+	
   /* if (FlagAstronomy){ 
 		drawAstronomy();
 	}
