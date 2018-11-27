@@ -385,7 +385,7 @@ void loop() {
 			draw_ecran0();
 			lastDownloadUpdate = millis();
 		}
-		if(!UseMaMeteo && ville[2][config.city] == "1"){// V25 nouvelle tentative lecture Mameteo
+		if(!config.UseMaMeteo && ville[2][config.city] == "1"){// V25 nouvelle tentative lecture Mameteo
 			lanceMameteo();
 		}
 	}
@@ -440,15 +440,15 @@ void draw_ecran0(){// ecran principal
 }
 //--------------------------------------------------------------------------------//
 void lanceMameteo(){
-	byte cpt = 0;	// V17
+	byte cpt = 0;
 	do{
 		Mameteo();
-		if(UseMaMeteo){	// si lecture ok on sort
+		if(config.UseMaMeteo){	// si lecture ok on sort
 			Serial.print(F("nbr lecture Mameteo:")),Serial.println(cpt);
-			cpt = 5;			// V21
+			cpt = 5;
 		}
 		cpt++;					// si non on boucles
-	}while (cpt < 5);	// V21
+	}while (cpt < 5);
 }
 //--------------------------------------------------------------------------------//
 void updateData() {
