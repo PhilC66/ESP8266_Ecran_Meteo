@@ -160,7 +160,7 @@ void drawForecast(byte frcst);
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex);
 void drawAstronomy();
 void drawCurrentWeatherDetail();
-// void drawLabelValue(uint8_t line, String label, String value);
+void drawLabelValue(uint8_t line, String label, String value);
 // void drawForecastTable(uint8_t start);
 String getTime(time_t *timestamp);
 const char* getMeteoconIcon(String iconText);
@@ -936,6 +936,22 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 		temp += " mm.";
 		ui.drawString(10, 225, temp);
 	}
+	else{
+		String degreeSign = "°F";
+		if (IS_METRIC) {degreeSign = "°C";}
+		tft.setFont(&ArialRoundedMTBold_14);
+		ui.setTextAlignment(CENTER);
+		ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+		ui.drawString(120, 90, "Current Conditions");
+
+		drawLabelValue(0, "Temperature:", currentWeather.temp + degreeSign);
+		drawLabelValue(1, "Wind Speed:", String(currentWeather.windSpeed, 1) + (IS_METRIC ? "m/s" : "mph") );
+		drawLabelValue(2, "Wind Dir:", String(currentWeather.windDeg, 1) + "°");
+		drawLabelValue(3, "Humidity:", String(currentWeather.humidity) + "%");
+		drawLabelValue(4, "Pressure:", String(currentWeather.pressure) + "hPa");
+		drawLabelValue(5, "Clouds:", String(currentWeather.clouds) + "%");
+		drawLabelValue(6, "Visibility:", String(currentWeather.visibility) + "m");
+	}
 	x=20;
 	y=255;
 	// Zone Vent
@@ -1143,6 +1159,7 @@ void draw_ecran41(byte zzone){// partie basse ecran 4
 			Serial.print(ville[1][config.city]);
 			numlign = 0;
 			updateData();
+			updateForecast();
 			draw_ecran0();
 			goto fin;
 		}
@@ -1438,4 +1455,14 @@ void updateForecast(){
   forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],ville[0][config.city], MAX_FORECASTS);
   delete forecastClient;
   forecastClient = nullptr;
+}
+//--------------------------------------------------------------------------------//
+void drawLabelValue(uint8_t line, String label, String value) {
+  const uint8_t labelX = 15;
+  const uint8_t valueX = 150;
+  ui.setTextAlignment(LEFT);
+  ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
+  ui.drawString(labelX, 110 + line * 15, label);
+  ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+  ui.drawString(valueX, 110 + line * 15, value);
 }
