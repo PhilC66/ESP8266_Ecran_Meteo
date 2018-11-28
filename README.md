@@ -7,8 +7,8 @@ ESP8266 Weather Station in Color using ILI9341 TFT 240x320 display
 This code is made for an 240x320 65K ILI9341 display with code running on an ESP8266 feather.
 You can buy such a display here: 
 
- https://www.adafruit.com/product/3315
- https://www.adafruit.com/product/2821
+* https://www.adafruit.com/product/3315
+* https://www.adafruit.com/product/2821
 
 ## Software Requirements/ Libraries
 
@@ -21,7 +21,8 @@ You can buy such a display here:
 You also need to get an API key for the openweathermap data: https://openweathermap.org
 
 Based on great job from http://blog.squix.ch and https://thingpulse.com, thanks a lot.
- Difference here are :
+
+Difference here are :
 * managed multi Weather Sation in different selectable city, with attached data from home weather station or not.
 * icons are record in SPIFFS memory.
 * Software update OTA.
