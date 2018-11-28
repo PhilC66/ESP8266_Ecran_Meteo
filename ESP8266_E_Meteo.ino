@@ -82,8 +82,8 @@ struct config_t								// configuration sauvée en EEPROM
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
 const int 	 ver  = 101;
-const byte nbrVille	= 6;
-String ville[3][nbrVille] ={
+const byte nbrVille	= 5;
+String ville[3][nbrVille+1] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
 	{"          ","Hagetmau","Bompas" ,"Epinal" ,"Mirecourt","Perpignan"},
 	{"0"         ,"1"       ,"0"      ,"0"      ,"0"        ,"0"}
@@ -1151,7 +1151,6 @@ void draw_ecran41(byte zzone){// partie basse ecran 4
 	// on selectionne en touchant le centre et sortie
 	
 	static byte numlign = 0;
-	
 	if (zzone == 2){// enregistrement nouvelle ville de reference
 		
 		if(numlign + 1 <= nbrVille && numlign + 1 != config.city && numlign + 1 !=0){
@@ -1167,22 +1166,24 @@ void draw_ecran41(byte zzone){// partie basse ecran 4
 			numlign = 0;
 			updateData();
 			updateForecast();
+			ecran = 0;
 			draw_ecran0();
 			goto fin;
 		}
 	}
-	if (zzone == 1){
+	else if (zzone == 1){
 		if(numlign > 0) numlign --;
 	}
-	if (zzone == 3){
+	else if (zzone == 3){
 		if(numlign < nbrVille - 1) numlign ++;
 	}
-	// Serial.print(F("zzone :")),Serial.println(zzone);
-	// Serial.print(F("numligne :")),Serial.println(numlign);
+
+	Serial.print(F("zzone :")),Serial.println(zzone);
+	Serial.print(F("numligne :")),Serial.println(numlign);
 	
 	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
-	ui.drawBmp("/s" + extBmp , 20 , 245);// icone vent sud 
-	ui.drawBmp("/n" + extBmp , 164, 245);// icone vent nord		
+	ui.drawBmp("/s" + extBmp , 20 , 245);// descendre icone vent sud
+	ui.drawBmp("/n" + extBmp , 164, 245);// monter    icone vent nord
 	
 	ui.setTextAlignment(CENTER);
 	tft.setFont(&ArialRoundedMTBold_14);
@@ -1262,7 +1263,7 @@ void GereEcran(){
 			3		30		300	
 			4		40		400
 	*/
-
+	static boolean first = true;
 	switch (zone){
 		case 1:
 			break;
@@ -1344,7 +1345,14 @@ void GereEcran(){
 				} */
 			}
 			if (ecran == 4){
-				draw_ecran41(2);	// selection ville
+				if(first){
+					first = false;
+					draw_ecran41(0); // pas de selection ville au premier passage
+				}
+				else{
+					draw_ecran41(2); // selection ville
+					first = true;    // revalide premier passage
+				}
 			}
 			break;
 		
