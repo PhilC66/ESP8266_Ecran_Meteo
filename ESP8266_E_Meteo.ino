@@ -1100,17 +1100,12 @@ void draw_ecran4(){// ecran ecran
 	tft.fillScreen(ILI9341_BLACK);
 	drawTime();
 	String temp;
-	// Wifi SSID abcdefgh
-	// Wifi RSSI -100 dBm
-	// Wifi Ip
-	// Batterie 
-	// versoft
-	// ville 	
+
 	ui.drawBmp("/wifi" + extBmp, 20, 70);									// icone Wifi
 	tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(RIGHT);
-  temp = WiFi.SSID();							// SSID ecran local
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(RIGHT);
+	temp = WiFi.SSID();							// SSID ecran local
 	ui.drawString(239, 90, temp);
 	temp = String(WiFi.RSSI());			// rssi ecran local
 	temp += F(" dBm");
@@ -1118,28 +1113,44 @@ void draw_ecran4(){// ecran ecran
 	temp = WiFi.localIP().toString();		// ip ecran local
 	ui.drawString(239, 125, temp);
 	
-	ui.drawBmp("/batt" + extBmp, 20, 160);									// icone Batterie
+	/* ui.drawBmp("/batt" + extBmp, 20, 160);									// icone Batterie
 	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);
-  	temp = String(TensionBatterie/1000,2);
-	ui.drawString(110, 212, temp);
-	
-	tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(LEFT);
+		temp = String(TensionBatterie/1000,2);
+	ui.drawString(110, 212, temp); */
+
+	/* tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(RIGHT);
 	// temp = String(TensionBatterie/1000,2);
 	// temp += F(" V ");
 	// ui.drawString(239, 180, temp);	
 	temp = F("V     ");	
-	ui.drawString(239, 212, temp);
+	ui.drawString(239, 212, temp); */
 	
+	drawLabelValue(3, "Heap Mem :", String(ESP.getFreeHeap() / 1024)+" kb");
+	drawLabelValue(4, "Chip ID :", String(ESP.getChipId()));
+	drawLabelValue(5, "CPU Freq. : ", String(ESP.getCpuFreqMHz()) + " MHz");
+	drawLabelValue(6, "VAlim : ", String(TensionBatterie/1000,2) +" V");
+  
+	char time_str[15];
+	const uint32_t millis_in_day = 1000 * 60 * 60 * 24;
+	const uint32_t millis_in_hour = 1000 * 60 * 60;
+	const uint32_t millis_in_minute = 1000 * 60;
+	uint8_t days = millis() / (millis_in_day);
+	uint8_t hours = (millis() - (days * millis_in_day)) / millis_in_hour;
+	uint8_t minutes = (millis() - (days * millis_in_day) - (hours * millis_in_hour)) / millis_in_minute;
+	sprintf(time_str, "%2dd%2dh%2dm", days, hours, minutes);
+	drawLabelValue(7, "Uptime : ", time_str);
+	
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	temp  = soft.substring(0,16);														// version soft ecran						
 	temp += String(ver);
 	ui.setTextAlignment(LEFT);
 	ui.drawString(10, 250, temp);
 	ui.setTextAlignment(CENTER);
 	ui.drawString(117, 275, ville[1][config.city]);
-  ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);	
+	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);	
 	temp = "Parametres Ecran Meteo";
 	ui.drawString(117, 300, temp);	
 }
@@ -1478,6 +1489,6 @@ void drawLabelValue(uint8_t line, String label, String value) {
   ui.setTextAlignment(LEFT);
   ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
   ui.drawString(labelX, 110 + line * 15, label);
-  ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.drawString(valueX, 110 + line * 15, value);
 }
