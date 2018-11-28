@@ -127,10 +127,11 @@ byte MinMajSoft			= 0;				// minute de verification mise à jour soft
 // boolean FlagAstronomy = true;
 	
 long lastDownloadUpdate = millis();
-long lastDrew = 0;
-time_t dstOffset = 0;
-String moonAgeImage = "";
-uint8_t moonAge = 0;
+long lastDrew 					= millis();
+long lastRotation				= millis();
+time_t dstOffset 				= 0;
+String moonAgeImage 		= "";
+uint8_t moonAge 				= 0;
 
 #define Ip_Analogique 0					// entree analogique mesure tension
 #define Op_BackLight  4					// sortie commande Backlight PWM
@@ -286,6 +287,7 @@ void setup() {
 //---------------------------------------------------------------------------
 void loop() {
 	static byte cpt = 0;	// compte nbr passage tous les 4 passages update previsions
+	// static byte n   = 0;
 	char *dstAbbrev;
   time_t now = dstAdjusted.time(&dstAbbrev);
   struct tm * timeinfo = localtime (&now);
@@ -320,14 +322,18 @@ void loop() {
 		if (x > 80  && x <= 160) zone *=10;
 		if (x > 160 && x <= 240) zone *=100;
 		
-		GereEcran();			
+		GereEcran();
 		
 		//vider buffer
 		while(!spitouch.bufferEmpty()){
 			TS_Point p = spitouch.getPoint();
 		}
 	}
-	
+	if(ecran == 0 && millis() - lastRotation > 5000){// rotation zone forecast
+		lastRotation = millis();
+		zone = 300;
+		GereEcran();
+	}
 	if(millis() - lastDrew > 10000 && String(timeinfo->tm_sec) == "0"){
 		drawTime();
 		lastDrew = millis();
@@ -592,7 +598,8 @@ void drawCurrentWeather() {
 }
 //--------------------------------------------------------------------------------//
 void drawForecast(byte seq) {
-	// draws the three forecast columns		
+	// draws the three forecast columns	
+Serial.print(F("drawForecast : "))	,Serial.print(millis()),Serial.print(" "),Serial.println(seq);
 	byte j = 0;
 	if(seq == 0) j = 0;
 	if(seq == 1) j = 3;
@@ -605,12 +612,18 @@ void drawForecast(byte seq) {
 }
 //--------------------------------------------------------------------------------//
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
+	// tft.fillRect(0, 140, tft.width(), 100,ILI9341_BLACK); // 0,153,width,80 efface existant
 	// forecast columns
 	tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextAlignment(CENTER);//CENTER
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	time_t time = forecasts[dayIndex].observationTime + dstOffset;
   struct tm * timeinfo = localtime (&time);
+
+	// Icone
+	String weatherIcon = getMeteoconIcon(forecasts[dayIndex].icon);
+  ui.drawBmp("/mini/" + weatherIcon + extBmp, x-30, y + 5);// x,y+10 y+15
+	// Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);
 	
 	// Jour heure	
 	String prevheure;
@@ -631,11 +644,6 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   ui.drawString(x + 0, y, String(forecasts[dayIndex].temp, 1) + (IS_METRIC ? " C" : "°F"));
 	
-	// Icone
-	String weatherIcon = getMeteoconIcon(forecasts[dayIndex].icon);
-  ui.drawBmp("/mini/" + weatherIcon + extBmp, x-30, y + 5);// x,y+10 y+15
-	
-	// Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);
   
 	// Pluie
 	ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);
