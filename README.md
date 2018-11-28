@@ -22,9 +22,10 @@ You also need to get an API key for the openweathermap data: https://openweather
 
 Based on great job from http://blog.squix.ch and https://thingpulse.com, thanks a lot
 Difference here are :
-managed multi Weather Sation in different selectable city, with attached data from home weather station or not.
-icons are record in SPIFFS memory.
-move data from weatherground to openweathermap
+* managed multi Weather Sation in different selectable city, with attached data from home weather station or not.
+* icons are record in SPIFFS memory.
+* Software update OTA.
+* move data from weatherground to openweathermap.
 
 ## Wiring
 
