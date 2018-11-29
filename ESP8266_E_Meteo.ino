@@ -285,6 +285,8 @@ void setup() {
 //---------------------------------------------------------------------------
 void loop() {
 	static byte cpt = 0;	// compte nbr passage tous les 4 passages update previsions
+	static byte cptlancemeteo = 0;
+	static boolean flaglancemeteo = true;
 	// static byte n   = 0;
 	char *dstAbbrev;
   time_t now = dstAdjusted.time(&dstAbbrev);
@@ -361,7 +363,8 @@ void loop() {
 		if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
 			updateData();
 			updateMinMax();
-			if(cpt == 3){
+			flaglancemeteo = true;
+			if(cpt == 3){ // mise à jour Forecast seulement tous les 4 passages
 				updateForecast();
 				cpt = 0;
 			}else{
@@ -371,8 +374,14 @@ void loop() {
 			draw_ecran0();
 			lastDownloadUpdate = millis();
 		}
-		if(!config.UseMaMeteo && ville[2][config.city] == "1"){// V25 nouvelle tentative lecture Mameteo
+		if(flaglancemeteo && !config.UseMaMeteo && ville[2][config.city] == "1"){// V25 nouvelle tentative lecture Mameteo
+			// tentative de mise à jour mameteo en cas d'echec
+			cptlancemeteo ++;
 			lanceMameteo();
+			if(cptlancemeteo > 4){ // arret apres 5 tentatives
+				cptlancemeteo = 0;
+				flaglancemeteo = false; // reporté à la prochaine boucle mise à jour 
+			}
 		}
 	}
 		
@@ -433,6 +442,7 @@ void lanceMameteo(){
 			cpt = 5;
 		}
 		cpt++;					// si non on boucles
+		delay(500);
 	}while (cpt < 5);
 }
 //--------------------------------------------------------------------------------//
@@ -795,7 +805,7 @@ void Mameteo(){ // lecture data ma meteo, valide si reponse
 		client.println(data.length());
 		client.println();
 		client.print(data);
-		delay(500);	//	V17 necessaire avec box Guillaume
+		delay(1000);	//	V17 500 necessaire avec box Guillaume
 		// Serial.print(F("Envoye au serveur :")),Serial.println(data);
 		String req = client.readStringUntil('X');//'\r' ne renvoie pas tous les caracteres?
 		
