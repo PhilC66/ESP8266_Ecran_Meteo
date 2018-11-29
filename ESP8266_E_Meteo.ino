@@ -117,19 +117,19 @@ byte API_KEY_Nbr;			// selection API_KEY selon ville
 struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
 String FileDataJour = "/FileDataJour.txt";				// Fichier en SPIFF data du jour
 
-byte ecran 					= 0;				// ecran actif
-int  zone  					= 0;				// zone de l'ecran
-byte frcst 					= 0;				// compteur forecast affiché 
-byte nbrecran 			= 4;				// nombre ecran existant
+byte ecran					= 0;				// ecran actif
+int  zone						= 0;				// zone de l'ecran
+byte frcst					= 0;				// compteur forecast affiché 
+byte nbrecran				= 4;				// nombre ecran existant
 byte MinMajSoft			= 0;				// minute de verification mise à jour soft
 // boolean FlagAstronomy = true;
 	
-long lastDownloadUpdate = millis();
-long lastDrew 					= millis();
+long lastDownloadUpdate	= millis();
+long lastDrew						= millis();
 long lastRotation				= millis();
-time_t dstOffset 				= 0;
-String moonAgeImage 		= "";
-uint8_t moonAge 				= 0;
+time_t dstOffset				= 0;
+String moonAgeImage			= "";
+uint8_t moonAge					= 0;
 
 #define Ip_Analogique 0					// entree analogique mesure tension
 #define Op_BackLight  4					// sortie commande Backlight PWM
@@ -511,7 +511,7 @@ void drawTime() {
   ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
 	sprintf(time_str, "%s", dstAbbrev);
-  ui.drawString(238, 45, time_str);  // Known bug: Cuts off 4th character of timezone abbreviation
+  ui.drawString(238, 45, time_str);
 	// Serial.println(time_str);
 }
 //--------------------------------------------------------------------------------//
