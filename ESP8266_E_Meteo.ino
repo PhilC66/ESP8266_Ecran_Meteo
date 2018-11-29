@@ -69,8 +69,6 @@ V100 18/11/2018 Migration Wunderground vers Weathermap
 #include <OpenWeatherMapForecast.h>
 #include <Astronomy.h>
 #include <EEPROM.h>									// variable en EEPROM
-// #include <EEPROMAnything.h>					// variable en EEPROM
-// #include <SD.h>	// SD card
 
 #define HOSTNAME "ESP_EcranMeteo"	// HOSTNAME for OTA update
 struct config_t								// configuration sauvée en EEPROM
@@ -187,7 +185,7 @@ void setup() {
   Serial.begin(115200);
 
   if (! spitouch.begin()) {
-    Serial.println("STMPE not found?");
+    Serial.println(F("STMPE not found?"));
   }
 	// lecture EEPROM
 	byte defaultmagic = 121;
@@ -270,7 +268,7 @@ void setup() {
 		// Serial.println("File Closed");
 	}
 	else{
-		Serial.println("Creating Data File:");		
+		Serial.println(F("Creating Data File:"));	
 		tempj.tempmin = currentWeather.temp;
 		tempj.tempmax = currentWeather.temp;
 		Recordtempj();
@@ -573,6 +571,11 @@ void drawCurrentWeather() {
 		}	
 		ui.drawString(239, 122, String(maMeteo.tempmin,1));
 	}else if(!config.UseMaMeteo && ville[2][config.city] == "1"){
+		tft.setFont(&ArialRoundedMTBold_36);
+		ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+		ui.setTextAlignment(LEFT);//RIGHT
+		ui.drawString(110, 120, String(currentWeather.temp, 1));// + (IS_METRIC ? "°C" : "°F"));
+		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextColor(ILI9341_MAGENTA, ILI9341_BLACK);
 		ui.drawString(239, 120, "#");
 	}
@@ -599,7 +602,7 @@ void drawCurrentWeather() {
 //--------------------------------------------------------------------------------//
 void drawForecast(byte seq) {
 	// draws the three forecast columns	
-Serial.print(F("drawForecast : "))	,Serial.print(millis()),Serial.print(" "),Serial.println(seq);
+
 	byte j = 0;
 	if(seq == 0) j = 0;
 	if(seq == 1) j = 3;
@@ -691,7 +694,7 @@ void drawAstronomy() {
 	
 	Serial.print(F("Moon Age :")),Serial.print(moonAge), Serial.print(",");
 	// moonAge = 24 * moonAge / 30;
-	Serial.print(24 * moonAge / 30),Serial.print(", phase :"),Serial.println(moonData.phase);
+	Serial.print(24 * moonAge / 30),Serial.print(F(", phase :")),Serial.println(moonData.phase);
 	
   ui.drawBmp("/moon" + String(moonAge) + extBmp, 120 - 30, 255);
 
@@ -964,7 +967,7 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	x=20;
 	y=255;
 	// Zone Vent
-	Serial.print("Vent :"),Serial.print(currentWeather.windSpeed),Serial.print(" m/s :"),Serial.println(currentWeather.windDeg);
+	Serial.print(F("Vent :")),Serial.print(currentWeather.windSpeed),Serial.print(F(" m/s :")),Serial.println(currentWeather.windDeg);
 	if(currentWeather.windDeg > 338 && currentWeather.windDeg < 24){
 		ui.drawBmp("/n" + extBmp , x, y);// icone vent		
 	}
@@ -1423,7 +1426,6 @@ void MajSoft() {
 
 //--------------------------------------------------------------------------------//
 String getTime(time_t *timestamp) {
-  // struct tm *timeInfo = gmtime(timestamp);
 	struct tm *timeInfo = localtime(timestamp);
   char buf[6];
   sprintf(buf, "%02d:%02d", timeInfo->tm_hour, timeInfo->tm_min);
