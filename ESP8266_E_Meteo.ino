@@ -34,7 +34,16 @@ See more at http://blog.squix.ch , https://thingpulse.com
 */
 
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoir */
-/* HUZZAH esp8266	4M(3M SPIFFS)
+
+/* carte HUZZAH esp8266	4M(3M SPIFFS)
+
+----------------- ATTENTION -----------------
+		ne fonctionne pas abec les mise a jour récente
+		version ci-dessous seulement
+		carte     esp8266 community V 2.3.0
+		librairie esp8266 wifimanager by tzapu V 0.12.0
+		
+----------------- ATTENTION -----------------		
 ----------------------to do----------------------------------
 securiser extraction data Mameteo bug si message erreur apres les données
 il ne faut pas prendre dernier " ou dernier :
@@ -79,7 +88,7 @@ struct config_t								// configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 101;
+const int 	 ver  = 100;
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
@@ -1153,7 +1162,7 @@ void draw_ecran4(){// ecran ecran
 	uint8_t days = millis() / (millis_in_day);
 	uint8_t hours = (millis() - (days * millis_in_day)) / millis_in_hour;
 	uint8_t minutes = (millis() - (days * millis_in_day) - (hours * millis_in_hour)) / millis_in_minute;
-	sprintf(time_str, "%2dd%2dh%2dm", days, hours, minutes);
+	sprintf(time_str, "%2dj%2dh%2dm", days, hours, minutes);
 	drawLabelValue(7, "Uptime : ", time_str);
 	
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
