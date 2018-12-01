@@ -88,7 +88,7 @@ struct config_t								// configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 100;
+const int 	 ver  = 101;
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
@@ -126,17 +126,17 @@ byte API_KEY_Nbr;			// selection API_KEY selon ville
 struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
 String FileDataJour = "/FileDataJour.txt";				// Fichier en SPIFF data du jour
 
-byte ecran					= 0;				// ecran actif
-int  zone						= 0;				// zone de l'ecran
-byte frcst					= 0;				// compteur forecast affiché 
-byte nbrecran				= 4;				// nombre ecran existant
-byte MinMajSoft			= 0;				// minute de verification mise à jour soft
+byte ecran          = 0; // ecran actif
+int  zone           = 0; // zone de l'ecran
+byte frcst          = 0; // compteur forecast affiché 
+byte nbrecran       = 4; // nombre ecran existant
+byte MinMajSoft     = 0; // minute de verification mise à jour soft
 // boolean FlagAstronomy = true;
 	
 long lastDownloadUpdate	= millis();
 long lastDrew						= millis();
 long lastRotation				= millis();
-time_t dstOffset				= 0;
+time_t dstOffset 				= 0;
 String moonAgeImage			= "";
 uint8_t moonAge					= 0;
 
@@ -732,7 +732,22 @@ void drawAstronomy() {
   ui.drawString(220, 270, F("Lune"));
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   ui.drawString(220, 285, String(24 * moonAge / 30) + "d");
-  ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");  
+  ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");
+
+/* 		Listing phase lune pour test
+		Serial.println();
+		for(int j = 1; j<32;j++){
+			Astronomy *astronomy = new Astronomy();
+			moonData = astronomy->calculateMoonData(2019,1,j);
+			float lunarMonth = 29.53;
+			moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
+			moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
+			Serial.print("date : "), Serial.print(j),Serial.print(":12:2018");
+			Serial.print(" age :"),Serial.print(moonAge);
+			Serial.print(" image :"),Serial.print(moonAgeImage);
+			Serial.print(" phase :"),Serial.print(moonData.phase);
+			Serial.print(" illum :"),Serial.println(moonData.illumination);
+		} */
 }
 
 //--------------------------------------------------------------------------------//
