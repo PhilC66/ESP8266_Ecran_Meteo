@@ -536,7 +536,7 @@ void drawCurrentWeather() {
   tft.setFont(&ArialRoundedMTBold_14);
   ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
   ui.setTextAlignment(RIGHT);
-	if(ville[2][config.city] != "0"){
+	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		ui.drawString(239, 85, ville[2][config.city]);
 	}
 	else{
