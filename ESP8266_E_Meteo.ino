@@ -93,8 +93,8 @@ const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
 	{"          ","Hagetmau","Bompas" ,"Epinal" ,"Mirecourt","Perpignan"},
-	{"0"         ,"1"       ,"0"      ,"0"      ,"0"        ,"0"}
-};// 0 Weathermap ID , 1 Nom Ville, 2 0/1 Station perso liée
+	{"0"         ,"Labastide-Chalosse"       ,"0"      ,"0"      ,"0"        ,"0"}
+};// 0 Weathermap ID , 1 Nom Ville, 2 0 ou nom Station perso liée
 
 float  TensionBatterie; // batterie de l'ecran
 // String texte;// texte passé pour suppression des car speciaux
@@ -383,7 +383,7 @@ void loop() {
 			draw_ecran0();
 			lastDownloadUpdate = millis();
 		}
-		if(flaglancemeteo && !config.UseMaMeteo && ville[2][config.city] == "1"){// V25 nouvelle tentative lecture Mameteo
+		if(flaglancemeteo && !config.UseMaMeteo && ville[2][config.city] != "0"){// V25 nouvelle tentative lecture Mameteo
 			// tentative de mise à jour mameteo en cas d'echec
 			cptlancemeteo ++;
 			lanceMameteo();
@@ -461,7 +461,7 @@ void updateData() {
   tft.fillScreen(ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);
 	
-	if(ville[2][config.city] == "1"){
+	if(ville[2][config.city] != "0"){
 		drawProgress(40, "Maj MaMeteo...");
 		lanceMameteo();
 	}
@@ -564,7 +564,7 @@ void drawCurrentWeather() {
 		}	
 		ui.drawString(239, 122, String(tempj.tempmin,1));//239,125
 	}
-	else if(config.UseMaMeteo && ville[2][config.city] == "1"){ // ville avec station meteo perso
+	else if(config.UseMaMeteo && ville[2][config.city] != "0"){ // ville avec station meteo perso
 		tft.setFont(&ArialRoundedMTBold_36);
 		ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		ui.setTextAlignment(LEFT);//RIGHT
@@ -589,7 +589,7 @@ void drawCurrentWeather() {
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		}	
 		ui.drawString(239, 122, String(maMeteo.tempmin,1));
-	}else if(!config.UseMaMeteo && ville[2][config.city] == "1"){
+	}else if(!config.UseMaMeteo && ville[2][config.city] != "0"){
 		tft.setFont(&ArialRoundedMTBold_36);
 		ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 		ui.setTextAlignment(LEFT);//RIGHT
@@ -921,7 +921,7 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 	y=70;//65
 	float pluie1h;
 	float pluie24h;
-	if(config.UseMaMeteo && ville[2][config.city] == "1" ){ // pas d'info pluie avec API Openweathermap
+	if(config.UseMaMeteo && ville[2][config.city] != "0" ){ // pas d'info pluie avec API Openweathermap
 		pluie1h  = maMeteo.rain1h;
 		pluie24h = maMeteo.rain24h;
 		
@@ -1049,7 +1049,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT
-	if(config.UseMaMeteo && ville[2][config.city] == "1"){
+	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		temp = String(maMeteo.pression,0);
 	}
 	else{
@@ -1064,7 +1064,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT
-	if(config.UseMaMeteo && ville[2][config.city] == "1"){
+	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		temp = String(maMeteo.humid,0);
 	}
 	else{
@@ -1079,7 +1079,7 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.setTextAlignment(LEFT);//RIGHT	
-	if(config.UseMaMeteo && ville[2][config.city] == "1"){
+	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		temp = String(dewPointFast(maMeteo.temp, maMeteo.humid),1);
 	}
 	else{
@@ -1421,7 +1421,7 @@ void draw_ecran(byte i){
 			draw_ecran2();
 			break;
 		case 3:
-			if(config.UseMaMeteo && ville[2][config.city] == "1"){
+			if(config.UseMaMeteo && ville[2][config.city] != "0"){
 				draw_ecran3();
 				break;
 			}
