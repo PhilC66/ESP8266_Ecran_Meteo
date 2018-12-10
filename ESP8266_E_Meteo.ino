@@ -38,7 +38,7 @@ See more at http://blog.squix.ch , https://thingpulse.com
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
 
 ----------------- ATTENTION -----------------
-		ne fonctionne pas abec les mise a jour récente
+		ne fonctionne pas avec les mise a jour récente
 		version ci-dessous seulement
 		carte     esp8266 community V 2.3.0
 		librairie esp8266 wifimanager by tzapu V 0.12.0
@@ -595,6 +595,7 @@ void drawCurrentWeather() {
 		ui.setTextAlignment(LEFT);//RIGHT
 		ui.drawString(110, 120, String(currentWeather.temp, 1));// + (IS_METRIC ? "°C" : "°F"));
 		tft.setFont(&ArialRoundedMTBold_14);
+		ui.setTextAlignment(RIGHT);
 		ui.setTextColor(ILI9341_MAGENTA, ILI9341_BLACK);
 		ui.drawString(239, 120, "#");
 	}
