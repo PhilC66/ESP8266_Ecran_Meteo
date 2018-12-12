@@ -1,6 +1,4 @@
 Installation nouvelle carte
 
 Outils/Type de carte :  Adafruit HUZZAH ESP8266 80MHz 115200 4M(3M SPIFFS)
-charger en SPIFFS les icones se trouvant dans data avec
-Outils/ESP8266 sketch data upload
-upload sketch
+Les icones seront telechargés automatiquement au premier lancement
