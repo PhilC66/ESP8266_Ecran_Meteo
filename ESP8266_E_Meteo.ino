@@ -247,6 +247,8 @@ void setup() {
   ArduinoOTA.begin();
   SPIFFS.begin();
 	
+	loadFileSpiffs(); // verification et chargement fichiers icones
+	
 	//WiFi.printDiag(Serial);
   
   //Uncomment if you want to update all internet resources
@@ -268,7 +270,7 @@ void setup() {
 		File f = SPIFFS.open(FileDataJour, "r");  
 		// Serial.print("Reading Data from File:"),Serial.println(f.size());
 		for(int i = 0;i < 2;i++){ //Read
-			String s=f.readStringUntil('\n');
+			String s = f.readStringUntil('\n');
 			Serial.print(i),Serial.print(" "),Serial.println(s);
 			if(i==0)tempj.tempmin = s.toFloat();
 			if(i==1)tempj.tempmax = s.toFloat();
@@ -1533,4 +1535,137 @@ void drawLabelValue(uint8_t line, String label, String value) {
   ui.drawString(labelX, 110 + line * 15, label);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   ui.drawString(valueX, 110 + line * 15, value);
+}
+//--------------------------------------------------------------------------------//
+void loadFileSpiffs(){ // verification fichiers en SPIFFS et telechargement si absent
+	/* temps de chargement si tout vide = 2mn30
+		si existe = 0.6s */
+	
+	if(SPIFFS.exists(FileChk)){// verification du fichier de verification
+		File f = SPIFFS.open(FileChk, "r");
+		long s = f.readStringUntil('\n').toInt();
+		Serial.print(F("Size lu fichier = ")),Serial.println(s);
+		Serial.print(F("Size lu en mem  = ")),Serial.println(FileSize);
+		if(s == FileSize){
+			
+			Serial.println(F("Fichiers SPIFFS existant"));
+			f.close();
+			return; // fichier OK retour sans rien faire
+		}
+		Serial.println(F("erreur size Fichiers"));// fichiers manquant on format et download
+		SPIFFS.format();
+	}
+	else{
+		Serial.println(F("Fichiers SPIFFS absent"));
+		SPIFFS.format();
+	}
+	
+	String url = F("http://");
+	url += wwwmonSitelocal;
+	url += "/iconemeteo";
+	static long size = 0; // size cumulé des fichiers pour verification
+	String filename = "";
+	
+	for(int i = 0; i < 17 ; i++){ // icones system
+		size += downloadFile(url,"/" + IconSystem[i] + extBmp);
+	}
+	for (int i = 0; i < 24; i++ ){ // icones lune
+		size += downloadFile(url,"/moon" + String(i) + extBmp);
+	}
+	String liste[13]={"01d","01n","02d","02n","03d","04d","04n","09d","10d","11d","13d","50d","0"};
+	for(int i = 0; i < 13; i++){ // icones meteo
+		size += downloadFile(url,"/" + String(getMeteoconIcon(liste[i])) + extBmp);
+	}
+	for(int i = 0; i < 13; i++){ // mini icones meteo
+		size += downloadFile(url,"/mini/" + String(getMeteoconIcon(liste[i])) + extBmp);
+	}
+	Serial.print(F("Size Cumul = ")),Serial.println(size);
+	File f = SPIFFS.open(FileChk, "w");// création du fichier de verification
+	f.println(size);
+	f.close();
+	
+}
+
+//--------------------------------------------------------------------------------//
+long downloadFile(String url, String filename){
+	// Serial.print("url  :"),Serial.println(url);
+	// Serial.print("file :"),Serial.println(filename);
+	// Serial.print("exist"),Serial.println(SPIFFS.exists(filename));
+	// SPIFFS.remove(filename);
+	// Serial.print("exist"),Serial.println(SPIFFS.exists(filename));
+	long lenSPIFFS = 0;
+	
+	if (SPIFFS.exists(filename) == true) {
+		Serial.print(filename),Serial.println(F(", File already exists. Skipping"));
+		return lenSPIFFS;
+	}
+
+	if((WiFi.status() == WL_CONNECTED)) { // wait for WiFi connection		 WiFiMulti.run() == WL_CONNECTED
+
+		HTTPClient http;
+
+		Serial.print(F("[HTTP] begin...\n"));
+
+		// configure server and url
+		http.begin(url + filename);
+
+		Serial.print(F("[HTTP] GET...\n"));
+		// start connection and send HTTP header
+		int httpCode = http.GET();
+		if(httpCode > 0) {
+			// HTTP header has been send and Server response header has been handled
+			Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+			
+			File f = SPIFFS.open(filename, "w");//w+
+			if (!f) {
+				Serial.println(F("file open failed"));
+				return lenSPIFFS;
+			}
+
+			// file found at server
+			if(httpCode == HTTP_CODE_OK) {
+
+				// get lenght of document (is -1 when Server sends no Content-Length header)
+				int len = http.getSize();
+				// Serial.print("Long = "),Serial.print(len);
+
+				// create buffer for read
+				uint8_t buff[128] = { 0 };
+
+				// get tcp stream
+				WiFiClient * stream = http.getStreamPtr();
+
+				// read all data from server
+				while(http.connected() && (len > 0 || len == -1)) {
+					// get available data size
+					size_t size = stream->available();
+
+					if(size) {
+						// read up to 128 byte
+						int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+
+						// write it to Serial
+						// Serial.write(buff, c);
+						f.write(buff,c);
+
+						if(len > 0) {
+							len -= c;
+						}
+					}
+					delay(1);
+				}
+
+				Serial.println();
+				Serial.print(F("[HTTP] connection closed or file end.\n"));
+
+			}
+			lenSPIFFS = f.size();
+			// Serial.print("exist size "),Serial.println(lenSPIFFS);
+			f.close();
+		} else {
+			Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+		}
+		http.end();
+	}
+	return lenSPIFFS;
 }

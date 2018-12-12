@@ -67,10 +67,13 @@ const char* getMeteoconIcon(String iconText) {
 	if (iconText == "11d" || iconText == "11n")	return "tstorms";
 	if (iconText == "13d" || iconText == "13n")	return "snow";
 	if (iconText == "50d" || iconText == "50n")	return "fog";
-	Serial.print(F("unknown :")),Serial.print(iconText),Serial.print(F("|end"));
+	// Serial.print(F("unknown :")),Serial.print(iconText),Serial.print(F("|end"));
 	return "unknown";
 }
 
+const String IconSystem [] = {"n","ne","e","se","s","so","o","no","variable","baro","batt","hygro","npluie","pluie","pluie2","ptr","wifi"};
+const long FileSize = 936046; // size cumul des icones en SPIFFS
+const String FileChk = "/FileChk"; // fichier en SPIFFS contenant FileSize
 /***************************
  * End Settings
  **************************/
