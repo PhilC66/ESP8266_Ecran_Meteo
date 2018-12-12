@@ -393,6 +393,9 @@ void loop() {
 				cptlancemeteo = 0;
 				flaglancemeteo = false; // reporté à la prochaine boucle mise à jour 
 			}
+			if(flaglancemeteo){
+				draw_ecran0();
+			}
 		}
 	}
 		
@@ -742,7 +745,7 @@ void drawAstronomy() {
   ui.drawString(220, 285, String(24 * moonAge / 30) + "d");
   ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");
 
-/* 		Listing phase lune pour test
+		Listing phase lune pour test
 		Serial.println();
 		for(int j = 1; j<32;j++){
 			Astronomy *astronomy = new Astronomy();
@@ -755,7 +758,7 @@ void drawAstronomy() {
 			Serial.print(" image :"),Serial.print(moonAgeImage);
 			Serial.print(" phase :"),Serial.print(moonData.phase);
 			Serial.print(" illum :"),Serial.println(moonData.illumination);
-		} */
+		}
 }
 
 //--------------------------------------------------------------------------------//
