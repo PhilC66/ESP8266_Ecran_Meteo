@@ -183,9 +183,6 @@ void draw_ecran(byte i);
 void MajSoft();
 // void drawVille();
 
-//WiFiManager
-WiFiManager wifiManager;
-
 WiFiClient client;
 //--------------------------------------------------------------------------------//  
 void setup() {
@@ -229,15 +226,27 @@ void setup() {
   ui.setTextAlignment(CENTER);
   ui.drawString(120, 160, "Connexion WiFi");
 
-  // Uncomment for testing wifi manager
-  //wifiManager.resetSettings();
+	/* WiFiManager */
+	WiFiManager wifiManager;
+  /* Uncomment for testing wifi manager */
+  // wifiManager.resetSettings();
   wifiManager.setAPCallback(configModeCallback);
 
-  //or use this for auto generated name ESP + ChipID
+  /* or use this for auto generated name ESP + ChipID */
   wifiManager.autoConnect();
-
-  //Manual Wifi
-  //WiFi.begin(mySSID, myPASSWORD);
+	
+  /* Manual Wifi */
+	//WiFi.begin(mySSID, myPASSWORD);
+	// while(WiFi.status() != WL_CONNECTED){
+		// Serial.print(".");
+		// delay(1000);
+	// }
+	// Serial.println();
+	//WiFi.printDiag(Serial);
+	
+	Serial.print(F("connecté : ")), Serial.print(WiFi.SSID());
+	String temp = String(WiFi.SSID());
+	ui.drawString(140, 160, temp);
 
   // OTA Setup
   String hostname(HOSTNAME);
@@ -247,13 +256,10 @@ void setup() {
   ArduinoOTA.begin();
   SPIFFS.begin();
 	
+	/* Uncomment if you want to update all internet resources */
+  //SPIFFS.format();
 	loadFileSpiffs(); // verification et chargement fichiers icones
 	
-	//WiFi.printDiag(Serial);
-  
-  //Uncomment if you want to update all internet resources
-  //SPIFFS.format();
-
   updateTime();
 	updateData();
 	updateForecast();
@@ -417,8 +423,8 @@ void MesureBatterie(){
 	Serial.print(F("Tension Batterie = ")),Serial.println(TensionBatterie);
 }
 //--------------------------------------------------------------------------------//
-// Called if WiFi has not been configured yet
 void configModeCallback (WiFiManager *myWiFiManager) {
+	/* Called if WiFi has not been configured yet */
   ui.setTextAlignment(CENTER);
   tft.setFont(&ArialRoundedMTBold_14);
   tft.setTextColor(ILI9341_CYAN);
@@ -744,21 +750,21 @@ void drawAstronomy() {
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   ui.drawString(220, 285, String(24 * moonAge / 30) + "d");
   ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");
-
-		Listing phase lune pour test
+/* 
+		// Listing phase lune pour test
 		Serial.println();
 		for(int j = 1; j<32;j++){
 			Astronomy *astronomy = new Astronomy();
-			moonData = astronomy->calculateMoonData(2019,1,j);
+			moonData = astronomy->calculateMoonData(2019,3,j);
 			float lunarMonth = 29.53;
 			moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
 			moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
-			Serial.print("date : "), Serial.print(j),Serial.print(":12:2018");
+			Serial.print("date : "), Serial.print(j),Serial.print(":03:2018");
 			Serial.print(" age :"),Serial.print(moonAge);
 			Serial.print(" image :"),Serial.print(moonAgeImage);
 			Serial.print(" phase :"),Serial.print(moonData.phase);
 			Serial.print(" illum :"),Serial.println(moonData.illumination);
-		}
+		} */
 }
 
 //--------------------------------------------------------------------------------//
@@ -938,7 +944,7 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 		if (pluie1h > 0){		
 			ui.drawBmp("/pluie"  + extBmp, x, y);// icone pluie	faible	
 		}
-		else if(pluie1h > 5){	//	V18
+		else if(pluie1h > 2){	//	V18
 			ui.drawBmp("/pluie2" + extBmp, x, y);// icone pluie	forte
 		}
 		else{
