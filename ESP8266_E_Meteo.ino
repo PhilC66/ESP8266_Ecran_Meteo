@@ -137,7 +137,7 @@ long lastDownloadUpdate	= millis();
 long lastDrew						= millis();
 long lastRotation				= millis();
 time_t dstOffset 				= 0;
-String moonAgeImage			= "";
+uint8_t moonAgeImage		= 0;
 uint8_t moonAge					= 0;
 
 #define Ip_Analogique 0					// entree analogique mesure tension
@@ -246,7 +246,8 @@ void setup() {
 	
 	Serial.print(F("connecté : ")), Serial.print(WiFi.SSID());
 	String temp = String(WiFi.SSID());
-	ui.drawString(140, 160, temp);
+	ui.drawString(120, 200, temp);
+	delay(1000);
 
   // OTA Setup
   String hostname(HOSTNAME);
@@ -490,7 +491,9 @@ void updateData() {
   moonData = astronomy->calculateMoonData(time(nullptr));
   float lunarMonth = 29.53;
   moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
-  moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
+  moonAgeImage = int(24 * moonAge/lunarMonth);
+	if(moonAgeImage == 0)moonAgeImage = 23;
+	// moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
 	// Serial.print(F("MoonImage :")),Serial.println(moonAgeImage);
 	
   delete astronomy;
@@ -728,11 +731,10 @@ void drawAstronomy() {
 	time_t timesunrise = currentWeather.sunrise + dstOffset;
 	time_t timesunset  = currentWeather.sunset  + dstOffset;
 	
-	Serial.print(F("Moon Age :")),Serial.print(moonAge), Serial.print(",");
-	// moonAge = 24 * moonAge / 30;
-	Serial.print(24 * moonAge / 30),Serial.print(F(", phase :")),Serial.println(moonData.phase);
+	Serial.print(F("Moon Age :")), Serial.print(moonAge), Serial.print(F(", moonImage :")),Serial.print(moonAgeImage);
+	Serial.print(F(", phase :")),Serial.println(moonData.phase);
 	
-  ui.drawBmp("/moon" + String(moonAge) + extBmp, 120 - 30, 255);
+  ui.drawBmp("/moon" + String(moonAgeImage) + extBmp, 120 - 30, 255);
 
   // ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   tft.setFont(&ArialRoundedMTBold_14);  
