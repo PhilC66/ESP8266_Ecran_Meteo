@@ -20,17 +20,17 @@ See more at http://blog.squix.ch , https://thingpulse.com
 
 /* 320x240 */
 /* Pin out de l'ESP8266
-0		TFT CS
-1		TX
-2		SD card CS
-3		RX
-4		Back Light
-5		SD Card detect ou IRQ touch
+0   TFT CS
+1   TX
+2   SD card CS
+3   RX
+4   Back Light
+5   SD Card detect ou IRQ touch
 12  MISO
 13  MOSI
-14	SCK
-15 	TFT DC
-16	RT CS Touch Screen
+14  SCK
+15  TFT DC
+16  RT CS Touch Screen
 */
 
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoir */
@@ -97,7 +97,6 @@ String ville[3][nbrVille+1] ={
 };// 0 Weathermap ID , 1 Nom Ville, 2 0 ou nom Station perso liée
 
 float  TensionBatterie; // batterie de l'ecran
-// String texte;// texte passé pour suppression des car speciaux
 String extBmp = ".bmp";
 
 struct t {
@@ -131,14 +130,13 @@ int  zone           = 0; // zone de l'ecran
 byte frcst          = 0; // compteur forecast affiché 
 byte nbrecran       = 4; // nombre ecran existant
 byte MinMajSoft     = 0; // minute de verification mise à jour soft
-// boolean FlagAstronomy = true;
 	
-long lastDownloadUpdate	= millis();
-long lastDrew						= millis();
-long lastRotation				= millis();
-time_t dstOffset 				= 0;
-uint8_t moonAgeImage		= 0;
-uint8_t moonAge					= 0;
+long lastDownloadUpdate = millis();
+long lastDrew           = millis();
+long lastRotation       = millis();
+time_t dstOffset        = 0;
+uint8_t moonAgeImage    = 0;
+uint8_t moonAge         = 0;
 
 #define Ip_Analogique 0					// entree analogique mesure tension
 #define Op_BackLight  4					// sortie commande Backlight PWM
@@ -169,19 +167,13 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex);
 void drawAstronomy();
 void drawCurrentWeatherDetail();
 void drawLabelValue(uint8_t line, String label, String value);
-// void drawForecastTable(uint8_t start);
 String getTime(time_t *timestamp);
 const char* getMeteoconIcon(String iconText);
-// String getMeteoconIcon(String iconText);
 boolean JourNuit();
-/* const char* getMiniMeteoconIconFromProgmem(String iconText);
-																			void drawSeparator(uint16_t y);
-																			void sleepNow(int wakeup); */
 void MesureBatterie();
 void GereEcran();
 void draw_ecran(byte i);
 void MajSoft();
-// void drawVille();
 
 WiFiClient client;
 //--------------------------------------------------------------------------------//  
@@ -199,15 +191,15 @@ void setup() {
 	EEPROM.get(0,config);
 	delay(100);
 	if(config.magic != defaultmagic){
-		config.magic 			= defaultmagic;
-		config.city 			= 1;
+		config.magic      = defaultmagic;
+		config.city       = 1;
 		config.UseMaMeteo = false;
 		EEPROM.put(0,config);
 		EEPROM.commit();
 		delay(100);
 		Serial.print(F("Nouvelle ville : ")),Serial.println(ville[1][config.city]);
 	}
-	MinMajSoft = random(0,10);	// determine la minute mise a jour pour eviter collision
+	MinMajSoft = random(0,10);	// determine la minute mise a jour pour limiter collision
 
 	if(config.city == 1){		// selection API key en fonction de la ville
 		API_KEY_Nbr = 0;
@@ -318,8 +310,8 @@ void loop() {
 	time_t now = dstAdjusted.time(&dstAbbrev);
 	struct tm * timeinfo = localtime (&now);
 
-	if (!spitouch.bufferEmpty()){				// si ecran touché
-		analogWrite(Op_BackLight,1023);		// Backlight ON
+	if (!spitouch.bufferEmpty()){       // si ecran touché
+		analogWrite(Op_BackLight,1023);   // Backlight ON
 		TS_Point p = spitouch.getPoint(); // recupere les coordonnées
 		p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
 		p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
@@ -400,7 +392,7 @@ void loop() {
 			draw_ecran0();
 			lastDownloadUpdate = millis();
 		}
-		if(flaglancemeteo && !config.UseMaMeteo && ville[2][config.city] != "0"){// V25 nouvelle tentative lecture Mameteo
+		if(flaglancemeteo && !config.UseMaMeteo && ville[2][config.city] != "0"){// nouvelle tentative lecture Mameteo
 			// tentative de mise à jour mameteo en cas d'echec
 			cptlancemeteo ++;
 			lanceMameteo();
@@ -419,11 +411,11 @@ void loop() {
 //--------------------------------------------------------------------------------//
 int moyenneAnalogique(){	// calcul moyenne 10 mesures consécutives
 	int moyenne = 0;
-  for (int j = 0; j < 10; j++) {
-    delay(10);
+	for (int j = 0; j < 10; j++) {
+		delay(10);
 		moyenne += analogRead(Ip_Analogique);
-  }
-  moyenne /= 10;
+	}
+	moyenne /= 10;
 	return moyenne;
 }
 //--------------------------------------------------------------------------------//
@@ -446,20 +438,12 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 	ui.drawString(120, 84, "192.168.4.1");
 }
 //--------------------------------------------------------------------------------//
-void draw_ecran0(){// ecran principal
+void draw_ecran0(){ // ecran principal
 	tft.fillScreen(ILI9341_BLACK);
-  drawTime();
-  drawCurrentWeather();
-  drawForecast(0);
+	drawTime();
+	drawCurrentWeather();
+	drawForecast(0);
 	drawAstronomy();
-	
-	
-  /* if (FlagAstronomy){ 
-		drawAstronomy();
-	}
-	else{
-		drawVille();
-	} */
 }
 //--------------------------------------------------------------------------------//
 void lanceMameteo(){
@@ -475,43 +459,39 @@ void lanceMameteo(){
 	}while (cpt < 5);
 }
 //--------------------------------------------------------------------------------//
-void updateData() {
-	// Update the internet based information and update screen
-	
-  tft.fillScreen(ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);
-	
+void updateData() { // Update the internet based information and update screen
+
+	tft.fillScreen(ILI9341_BLACK);
+	tft.setFont(&ArialRoundedMTBold_14);
+
 	if(ville[2][config.city] != "0"){
 		drawProgress(40, "Maj MaMeteo...");
 		lanceMameteo();
 	}
-	
-  drawProgress(50, "Maj actuelle...");
-  OpenWeatherMapCurrent *currentWeatherClient = new OpenWeatherMapCurrent();
-  currentWeatherClient->setMetric(IS_METRIC);
-  currentWeatherClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
-  currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],ville[0][config.city]);
-  delete currentWeatherClient;
-  currentWeatherClient = nullptr;
 
-  drawProgress(80, "Maj astronomie...");
-  Astronomy *astronomy = new Astronomy();
-  moonData = astronomy->calculateMoonData(time(nullptr));
-  float lunarMonth = 29.53;
-  moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
-  moonAgeImage = int(24 * moonAge/lunarMonth);
+	drawProgress(50, "Maj actuelle...");
+	OpenWeatherMapCurrent *currentWeatherClient = new OpenWeatherMapCurrent();
+	currentWeatherClient->setMetric(IS_METRIC);
+	currentWeatherClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+	currentWeatherClient->updateCurrentById(&currentWeather, Openweathermap_key[API_KEY_Nbr],ville[0][config.city]);
+	delete currentWeatherClient;
+	currentWeatherClient = nullptr;
+
+	drawProgress(80, "Maj astronomie...");
+	Astronomy *astronomy = new Astronomy();
+	moonData = astronomy->calculateMoonData(time(nullptr));
+	float lunarMonth = 29.53;
+	moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
+	moonAgeImage = int(24 * moonAge/lunarMonth);
 	if(moonAgeImage == 0)moonAgeImage = 23;
-	// moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
-	// Serial.print(F("MoonImage :")),Serial.println(moonAgeImage);
-	
-  delete astronomy;
-  astronomy = nullptr;
+
+	delete astronomy;
+	astronomy = nullptr;
 	drawProgress(100, "Fin...");
-  delay(500);
+	delay(500);
 }
 //--------------------------------------------------------------------------------//
-// Progress bar helper
-void drawProgress(uint8_t percentage, String text) {
+void drawProgress(uint8_t percentage, String text) { // Progress bar helper
   ui.setTextAlignment(CENTER);
   ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
   tft.fillRect(0, 140, 240, 45, ILI9341_BLACK);
@@ -519,45 +499,43 @@ void drawProgress(uint8_t percentage, String text) {
   ui.drawProgressBar(10, 165, 240 - 20, 15, percentage, ILI9341_WHITE, ILI9341_BLUE);
 }
 //--------------------------------------------------------------------------------//
-void drawTime() {
-	// draws the clock
+void drawTime() { // draws the clock
 	char time_str[11];
-  char *dstAbbrev;
-  time_t now = dstAdjusted.time(&dstAbbrev);
-  struct tm * timeinfo = localtime (&now);
-	
+	char *dstAbbrev;
+	time_t now = dstAdjusted.time(&dstAbbrev);
+	struct tm * timeinfo = localtime (&now);
+
 	tft.fillRect(0, 0, tft.width(), 57,ILI9341_BLACK); // efface existant
-  ui.setTextAlignment(CENTER);
-  ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextAlignment(CENTER);
+	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+	tft.setFont(&ArialRoundedMTBold_14);
 	String madate = WDAY_NAMES[timeinfo->tm_wday] + " " + String(timeinfo->tm_mday) + " "+ MONTH_NAMES[timeinfo->tm_mon] + " " + String(1900 + timeinfo->tm_year);
 	// Serial.print(F("Date du jour : ")),Serial.println(madate);
-  ui.drawString(120, 20, madate);
-  
-  tft.setFont(&ArialRoundedMTBold_36);
+	ui.drawString(120, 20, madate);
+
+	tft.setFont(&ArialRoundedMTBold_36);
 	sprintf(time_str, "%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min);
-  ui.drawString(120, 56, time_str);
+	ui.drawString(120, 56, time_str);
 	Serial.println(time_str);
 	ui.setTextAlignment(RIGHT);
-  ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
+	tft.setFont(&ArialRoundedMTBold_14);
 	sprintf(time_str, "%s", dstAbbrev);
-  ui.drawString(238, 45, time_str);
+	ui.drawString(238, 45, time_str);
 	// Serial.println(time_str);
 }
 //--------------------------------------------------------------------------------//
-void drawCurrentWeather() {
-	// draws current weather information
-	
+void drawCurrentWeather() { // draws current weather information
+
 	// Weather Icon
 	String weatherIcon = getMeteoconIcon(currentWeather.icon);
 	ui.drawBmp("/" + weatherIcon + extBmp, 0, 55);
 	// Serial.print(F("Icone = ")),Serial.println(weatherIcon);
-  
-  // Weather Ville
-  tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
-  ui.setTextAlignment(RIGHT);
+
+	// Weather Ville
+	tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
+	ui.setTextAlignment(RIGHT);
 	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		ui.drawString(239, 85, ville[2][config.city]);
 	}
@@ -582,9 +560,9 @@ void drawCurrentWeather() {
 		}
 		ui.setTextAlignment(RIGHT);
 		ui.drawString(239, 100, String(tempj.tempmax,1));//108
-	
+
 		if(tempj.tempmin < 0){													//tempmin
-				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
+			ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
 		}
 		else{
 			ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
@@ -607,7 +585,7 @@ void drawCurrentWeather() {
 		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextAlignment(RIGHT);
 		ui.drawString(239, 100, String(maMeteo.tempmax,1));//108
-	
+
 		// maMeteo.tempmin = -25.5;	
 		if(maMeteo.tempmin < 0){													//tempmin
 				ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);	
@@ -626,14 +604,14 @@ void drawCurrentWeather() {
 		ui.setTextColor(ILI9341_MAGENTA, ILI9341_BLACK);
 		ui.drawString(239, 120, "#");
 	}
-	
+
 	// Weather Text
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
 	ui.setTextAlignment(RIGHT);
 	ui.drawString(239, 137, RemplaceCharSpec(currentWeather.description));//239,140
-  // drawSeparator(135);
-	
+	// drawSeparator(135);
+
 	//------------------------ test --------------------------------
 /* 		String bidon[12]={"01d","01n","02d","02n","03d","04d","04n","09d","10d","11d","13d","50d"};
 		String weatherIcon0;
@@ -647,8 +625,7 @@ void drawCurrentWeather() {
   //------------------------ test --------------------------------
 }
 //--------------------------------------------------------------------------------//
-void drawForecast(byte seq) {
-	// draws the three forecast columns	
+void drawForecast(byte seq) { // draws the three forecast columns	
 
 	byte j = 0;
 	if(seq == 0) j = 0;
@@ -662,19 +639,19 @@ void drawForecast(byte seq) {
 }
 //--------------------------------------------------------------------------------//
 void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
-	// tft.fillRect(0, 140, tft.width(), 100,ILI9341_BLACK); // 0,153,width,80 efface existant
+
 	// forecast columns
 	tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextAlignment(CENTER);//CENTER
+	ui.setTextAlignment(CENTER);//CENTER
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	time_t time = forecasts[dayIndex].observationTime + dstOffset;
-  struct tm * timeinfo = localtime (&time);
+	struct tm * timeinfo = localtime (&time);
 
 	// Icone
 	String weatherIcon = getMeteoconIcon(forecasts[dayIndex].icon);
-  ui.drawBmp("/mini/" + weatherIcon + extBmp, x-30, y + 5);// x,y+10 y+15
+	ui.drawBmp("/mini/" + weatherIcon + extBmp, x-30, y + 5);// x,y+10 y+15
 	// Serial.print(F("miniIcone = ")),Serial.println(weatherIcon);
-	
+
 	// Jour heure	
 	String prevheure;
 	if(timeinfo->tm_hour > 11){		
@@ -687,18 +664,17 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 	else{
 		prevheure = "23";
 	}
-	
-  ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,2) + " " + prevheure + ":00");//x+25 y-15
-	
+
+	ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,2) + " " + prevheure + ":00");//x+25 y-15
+
 	// Temperature
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.drawString(x + 0, y, String(forecasts[dayIndex].temp, 1) + (IS_METRIC ? " C" : "°F"));
-	
-  
+	ui.drawString(x + 0, y, String(forecasts[dayIndex].temp, 1) + (IS_METRIC ? " C" : "°F"));
+
 	// Pluie
 	ui.setTextColor(ILI9341_BLUE, ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextAlignment(CENTER);
+	tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextAlignment(CENTER);
 	// Serial.print(F("forecast pluie = ")),Serial.println(forecasts[dayIndex].rain);
 	if(forecasts[dayIndex].rain > 0){
 		if(forecasts[dayIndex].rain < 1){
@@ -708,72 +684,35 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 			ui.drawString(x + 0, y + 65, String(forecasts[dayIndex].rain, 2) + (IS_METRIC ? "mm" : "in"));
 		}
 	}
-  
 }
 //--------------------------------------------------------------------------------//
-/* void drawVille() { // conditions actuelles sur ville
-	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
-	tft.setFont(&ArialRoundedMTBold_14);  
-  ui.setTextAlignment(CENTER);
-  ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-	String temp;
-	ui.drawString(120, 250, ville[1][config.city]);
-	
-	tft.setFont(&ArialRoundedMTBold_36);  
-  ui.setTextAlignment(LEFT);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-	temp = wunderground.getCurrentTemp();
-	temp += " C";
-	ui.drawString(10, 300, temp);
-	ui.setTextAlignment(RIGHT);
-	temp = wunderground.getHumidity();
-	// temp += " %";
-	ui.drawString(230, 300, temp);
-	
-} */
-//--------------------------------------------------------------------------------//
 void drawAstronomy() {
-	// draw moonphase and sunrise/set and moonrise/set
+	/* draw moonphase and sunrise/set and moonrise/set */
 	tft.fillRect(0, 244, tft.width(), 86,ILI9341_BLACK); // efface existant 0,234
 
 	time_t timesunrise = currentWeather.sunrise + dstOffset;
 	time_t timesunset  = currentWeather.sunset  + dstOffset;
-	
+
 	Serial.print(F("Moon Age :")), Serial.print(moonAge), Serial.print(F(", moonImage :")),Serial.print(moonAgeImage);
 	Serial.print(F(", phase :")),Serial.println(moonData.phase);
-	
-  ui.drawBmp("/moon" + String(moonAgeImage) + extBmp, 120 - 30, 255);
 
-  // ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);  
-  ui.setTextAlignment(LEFT);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.drawString(20, 270, F("Soleil"));
-  ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.drawString(20, 285, getTime(&timesunrise));
-  ui.drawString(20, 300, getTime(&timesunset));
+	ui.drawBmp("/moon" + String(moonAgeImage) + extBmp, 120 - 30, 255);
 
-  ui.setTextAlignment(RIGHT);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.drawString(220, 270, F("Lune"));
-  ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
-  ui.drawString(220, 285, String(24 * moonAge / 30) + "d");
-  ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");
-/* 
-		// Listing phase lune pour test
-		Serial.println();
-		for(int j = 1; j<32;j++){
-			Astronomy *astronomy = new Astronomy();
-			moonData = astronomy->calculateMoonData(2019,3,j);
-			float lunarMonth = 29.53;
-			moonAge = moonData.phase <= 4 ? lunarMonth * moonData.illumination / 2 : lunarMonth - moonData.illumination * lunarMonth / 2;
-			moonAgeImage = String((char) (65 + ((uint8_t) ((26 * moonAge / 30) % 26))));
-			Serial.print("date : "), Serial.print(j),Serial.print(":03:2018");
-			Serial.print(" age :"),Serial.print(moonAge);
-			Serial.print(" image :"),Serial.print(moonAgeImage);
-			Serial.print(" phase :"),Serial.print(moonData.phase);
-			Serial.print(" illum :"),Serial.println(moonData.illumination);
-		} */
+	// ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+	tft.setFont(&ArialRoundedMTBold_14);  
+	ui.setTextAlignment(LEFT);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.drawString(20, 270, F("Soleil"));
+	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+	ui.drawString(20, 285, getTime(&timesunrise));
+	ui.drawString(20, 300, getTime(&timesunset));
+
+	ui.setTextAlignment(RIGHT);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.drawString(220, 270, F("Lune"));
+	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
+	ui.drawString(220, 285, String(24 * moonAge / 30) + "d");
+	ui.drawString(220, 300, String(moonData.illumination * 100, 0) + "%");
 }
 
 //--------------------------------------------------------------------------------//
@@ -786,12 +725,12 @@ void drawAstronomy() {
 
 //--------------------------------------------------------------------------------//
 String RemplaceCharSpec(String texte){
-	// Remplacer les caracteres >127
-	// 130,136-138 	par e 101
-	// 131-134 			par a 97
-	// 135 					par c 99
-	// si é caracteres recus 195 + 169
-	
+	/* Remplacer les caracteres >127
+	130,136-138 	par e 101
+	131-134 			par a 97
+	135 					par c 99
+	si é caracteres recus 195 + 169
+	*/
 	String textec = "";
 	// Serial.print(F("texte a convertir =")), Serial.println(texte);
 		for(byte i=0; i < texte.length();i++){	
@@ -811,8 +750,8 @@ String RemplaceCharSpec(String texte){
 }
 //---------------------------------------------------------------------------
 boolean JourNuit(){ 
-	// determine si jour ou nuit
-	// Jour = true, Nuit=false
+	/* determine si jour ou nuit
+	Jour = true, Nuit=false */
 	
 	char *dstAbbrev;
 	time_t now = dstAdjusted.time(&dstAbbrev);
@@ -821,7 +760,7 @@ boolean JourNuit(){
 	time_t timesunset  = currentWeather.sunset  + dstOffset;
 	
 	timesunrise -= 3600;	// marge 1 heure
-	timesunset  += 3600;
+	timesunset  += 7200;	// marge 2 heures
 	
 	if(timesunset > timesunrise){
 		if((now > timesunset && now > timesunrise)
@@ -912,15 +851,15 @@ void Mameteo(){ // lecture data ma meteo, valide si reponse
 }
 //----------------------------------------------------------------------------------------------//
 void ecrirevaleur(String var, int j) {
-  //////////convertir string en float ou int et copie dans variables//////////////////////////////
-  float varfloat = var.toFloat() ; 
-  if (j == 1)  maMeteo.temp 		= varfloat;
-  if (j == 2)  maMeteo.tempmin 	= varfloat;
-  if (j == 3)  maMeteo.tempmax 	= varfloat;
-	if (j == 4)  maMeteo.humid 		= varfloat;
+  /* convertir string en float ou int et copie dans variables */
+	float varfloat = var.toFloat() ; 
+	if (j == 1)  maMeteo.temp     = varfloat;
+	if (j == 2)  maMeteo.tempmin  = varfloat;
+	if (j == 3)  maMeteo.tempmax  = varfloat;
+	if (j == 4)  maMeteo.humid    = varfloat;
 	if (j == 5)  maMeteo.pression = varfloat;
-	if (j == 6)  maMeteo.rain1h 	= varfloat;
-	if (j == 7)  maMeteo.rain24h 	= varfloat;
+	if (j == 6)  maMeteo.rain1h   = varfloat;
+	if (j == 7)  maMeteo.rain24h  = varfloat;
 	if (j == 8)  maMeteo.derpluie = var.toInt();
 	if (j == 9)  maMeteo.pluie7j  = varfloat;
 	if (j == 10) maMeteo.pluie30j = varfloat;
@@ -928,9 +867,9 @@ void ecrirevaleur(String var, int j) {
 	if (j == 12) maMeteo.der24h   = varfloat;
 	if (j == 13) maMeteo.last     = var.toInt();
 	if (j == 14) maMeteo.vbatt    = varfloat;
-	if (j == 15) maMeteo.rssi    	= varfloat;
-	if (j == 16) maMeteo.ssid    	= var;
-	if (j == 17) maMeteo.versoft 	= var.toInt();
+	if (j == 15) maMeteo.rssi     = varfloat;
+	if (j == 16) maMeteo.ssid     = var;
+	if (j == 17) maMeteo.versoft  = var.toInt();
 	
 	// Serial.print(F("var=")), Serial.print(j), Serial.print(";"),Serial.print(var), Serial.print(";"), Serial.println(varfloat);
 }
@@ -974,7 +913,7 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 		tft.setFont(&ArialRoundedMTBold_14);
 		ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
 		ui.setTextAlignment(LEFT);
-	
+
 		temp = "";//Der pluie,
 		temp += String(maMeteo.der24h,1);
 		temp += " mm, ";
@@ -1017,12 +956,12 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 		ui.drawString(120, 90, "Current Conditions");
 
 		drawLabelValue(0, "Temperature:", currentWeather.temp + degreeSign);
-		drawLabelValue(1, "Wind Speed:", String(currentWeather.windSpeed, 1) + (IS_METRIC ? "m/s" : "mph") );
-		drawLabelValue(2, "Wind Dir:", String(currentWeather.windDeg, 1) + "°");
-		drawLabelValue(3, "Humidity:", String(currentWeather.humidity) + "%");
-		drawLabelValue(4, "Pressure:", String(currentWeather.pressure) + "hPa");
-		drawLabelValue(5, "Clouds:", String(currentWeather.clouds) + "%");
-		drawLabelValue(6, "Visibility:", String(currentWeather.visibility) + "m");
+		drawLabelValue(1, "Wind Speed:" , String(currentWeather.windSpeed, 1) + (IS_METRIC ? "m/s" : "mph") );
+		drawLabelValue(2, "Wind Dir:"   , String(currentWeather.windDeg, 1) + "°");
+		drawLabelValue(3, "Humidity:"   , String(currentWeather.humidity) + "%");
+		drawLabelValue(4, "Pressure:"   , String(currentWeather.pressure) + "hPa");
+		drawLabelValue(5, "Clouds:"     , String(currentWeather.clouds) + "%");
+		drawLabelValue(6, "Visibility:" , String(currentWeather.visibility) + "m");
 	}
 	x=20;
 	y=255;
@@ -1056,14 +995,13 @@ void draw_ecran1(){// ecran complement meteo Pluie/Vent
 		ui.drawBmp("/variable" + extBmp , x, y);
 	}
 	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT
+	ui.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+	ui.setTextAlignment(LEFT);//RIGHT
 	temp = String(currentWeather.windSpeed/1000*3600,1);
 	ui.drawString(110, 300, temp);	// vitesse vent
 	temp = String(currentWeather.windDeg,1);
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.drawString(200, 290, "km/h");	// vitesse vent
-
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran2(){// ecran complement meteo pression point rosée
@@ -1072,8 +1010,8 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	drawTime();
 	ui.drawBmp("/baro" + extBmp, 20, 70);									// icone barometre
 	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(LEFT);//RIGHT
 	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		temp = String(maMeteo.pression,0);
 	}
@@ -1084,11 +1022,11 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(LEFT);	
 	ui.drawString(200, 125, " hPa");
-	
+
 	ui.drawBmp("/hygro" + extBmp, 20, 160);									// icone Hygrometre
 	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(LEFT);//RIGHT
 	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		temp = String(maMeteo.humid,0);
 	}
@@ -1099,11 +1037,11 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(LEFT);	
 	ui.drawString(200, 212, " %");
-	
+
 	ui.drawBmp("/ptr" + extBmp, 20, 255);									// icone Point rosée
 	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);//RIGHT	
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(LEFT);//RIGHT	
 	if(config.UseMaMeteo && ville[2][config.city] != "0"){
 		temp = String(dewPointFast(maMeteo.temp, maMeteo.humid),1);
 	}
@@ -1114,33 +1052,28 @@ void draw_ecran2(){// ecran complement meteo pression point rosée
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(LEFT);	
 	ui.drawString(200, 300, " C");
-
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran3(){// ecran systeme station
 	tft.fillScreen(ILI9341_BLACK);
 	drawTime();
 	String temp;
-	// Wifi SSID abcdefgh
-	// Wifi RSSI -100 dBm
-	// Batterie 
-	// versoft
- 	
+
 	ui.drawBmp("/wifi" + extBmp, 20, 70);									// icone Wifi
 	tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(RIGHT);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(RIGHT);
 	temp = maMeteo.ssid;								// SSID de la station
 	ui.drawString(239, 90, temp);
 	temp = String(maMeteo.rssi,0);			// rssi de la station
 	temp += F(" dBm");
 	ui.drawString(239, 108, temp);
-	
+
 	ui.drawBmp("/batt" + extBmp, 20, 160);									// icone Batterie
 	tft.setFont(&ArialRoundedMTBold_36);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(LEFT);
-  temp = String(Battpct(maMeteo.vbatt));
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(LEFT);
+	temp = String(Battpct(maMeteo.vbatt));
 	ui.drawString(110, 212, temp);
 	tft.setFont(&ArialRoundedMTBold_14);
 	ui.setTextAlignment(RIGHT);
@@ -1149,7 +1082,7 @@ void draw_ecran3(){// ecran systeme station
 	ui.drawString(239, 180, temp);	
 	temp = F("%      ");	
 	ui.drawString(239, 212, temp);
-	
+
 	temp = "soft ver : ";															// version soft station	
 	temp += String(maMeteo.versoft);
 	ui.setTextAlignment(LEFT);
@@ -1175,7 +1108,7 @@ void draw_ecran4(){// ecran ecran
 	ui.drawString(239, 108, temp);	
 	temp = WiFi.localIP().toString();		// ip ecran local
 	ui.drawString(239, 125, temp);
-	
+
 	/* ui.drawBmp("/batt" + extBmp, 20, 160);									// icone Batterie
 	tft.setFont(&ArialRoundedMTBold_36);
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
@@ -1190,12 +1123,12 @@ void draw_ecran4(){// ecran ecran
 	// ui.drawString(239, 180, temp);	
 	temp = F("V     ");	
 	ui.drawString(239, 212, temp); */
-	
+
 	drawLabelValue(3, "Heap Mem :", String(ESP.getFreeHeap() / 1024)+" kb");
 	drawLabelValue(4, "Chip ID :", String(ESP.getChipId()));
 	drawLabelValue(5, "CPU Freq. : ", String(ESP.getCpuFreqMHz()) + " MHz");
 	drawLabelValue(6, "VAlim : ", String(TensionBatterie/1000,2) +" V");
-  
+
 	char time_str[15];
 	const uint32_t millis_in_day = 1000 * 60 * 60 * 24;
 	const uint32_t millis_in_hour = 1000 * 60 * 60;
@@ -1205,7 +1138,7 @@ void draw_ecran4(){// ecran ecran
 	uint8_t minutes = (millis() - (days * millis_in_day) - (hours * millis_in_hour)) / millis_in_minute;
 	sprintf(time_str, "%2dj%2dh%2dm", days, hours, minutes);
 	drawLabelValue(7, "Uptime : ", time_str);
-	
+
 	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
 	temp  = soft.substring(0,16);														// version soft ecran						
 	temp += String(ver);
@@ -1214,23 +1147,21 @@ void draw_ecran4(){// ecran ecran
 	ui.setTextAlignment(CENTER);
 	ui.drawString(117, 275, ville[1][config.city]);
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);	
-	temp = "Parametres Ecran Meteo";
+	temp = F("Parametres Ecran Meteo");
 	ui.drawString(117, 300, temp);	
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran41(byte zzone){// partie basse ecran 4
-	// zzone = 1 gauche, 2 centre, 3 droite
-	// on ecrit au centre la liste des villes dispo, actuelle couleur bleue
-	// de part  et d'autre une fleche montante descendante
-	// on selectionne en touchant le centre et sortie
-	
+	/* zzone = 1 gauche, 2 centre, 3 droite
+	on ecrit au centre la liste des villes dispo, actuelle couleur bleue
+	de part  et d'autre une fleche montante descendante
+	on selectionne en touchant le centre et sortie */
+
 	static byte numlign = 0;
 	if (zzone == 2){// enregistrement nouvelle ville de reference
 		
 		if(numlign + 1 <= nbrVille && numlign + 1 != config.city && numlign + 1 !=0){
 			config.city = numlign + 1; // nouvelle ville
-			// WUNDERGROUND_CITY = ville[0][config.city];
-			// EcrireEEPROM(0);
 			EEPROM.put(0,config);
 			EEPROM.commit();
 			delay(100);
@@ -1254,14 +1185,14 @@ void draw_ecran41(byte zzone){// partie basse ecran 4
 
 	Serial.print(F("zzone :")),Serial.println(zzone);
 	Serial.print(F("numligne :")),Serial.println(numlign);
-	
+
 	tft.fillRect(0, 234, tft.width(), 86,ILI9341_BLACK); // efface existant
 	ui.drawBmp("/s" + extBmp , 20 , 245);// descendre icone vent sud
 	ui.drawBmp("/n" + extBmp , 164, 245);// monter    icone vent nord
-	
+
 	ui.setTextAlignment(CENTER);
 	tft.setFont(&ArialRoundedMTBold_14);
-	
+
 	for(int i = 0;i < 3;i++){
 		if(numlign + i <= nbrVille){
 			if(numlign + i == config.city){
@@ -1409,14 +1340,7 @@ void GereEcran(){
 			break;
 		case 40:
 			if (ecran == 0){
-				/* if (FlagAstronomy){ 
-					drawVille();
-					FlagAstronomy = false;
-				}
-				else{
-					drawAstronomy();
-					FlagAstronomy = true;
-				} */
+				
 			}
 			if (ecran == 4){
 				if(first){
@@ -1434,7 +1358,7 @@ void GereEcran(){
 }
 //----------------------------------------------------------------------------------------------//
 void draw_ecran(byte i){
-	// i = ecran 
+	/* i = ecran */
 	switch(i){
 		case 0:
 			draw_ecran0();
@@ -1450,7 +1374,7 @@ void draw_ecran(byte i){
 				draw_ecran3();
 				break;
 			}
-			else{//suivant
+			else{ //suivant
 				break;
 			}
 		case 4:
@@ -1460,7 +1384,7 @@ void draw_ecran(byte i){
 }
 //----------------------------------------------------------------------------------------------//
 void MajSoft() {
-  //////////////////////////////cherche si mise à jour dispo et maj///////////////////////////////////////
+  /* cherche si mise à jour dispo et maj */
   
   String Fichier = "http://";
   Fichier += monSite;
@@ -1473,7 +1397,6 @@ void MajSoft() {
     case HTTP_UPDATE_FAILED:
       //Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
       Serial.println(F("Pas de mise à jour disponible !"));
-      // messageMQTT = "Pas de Maj Soft";
       break;
     case HTTP_UPDATE_NO_UPDATES:
       //Serial.println(F("HTTP_UPDATE_NO_UPDATES"));
@@ -1487,17 +1410,17 @@ void MajSoft() {
 //--------------------------------------------------------------------------------//
 String getTime(time_t *timestamp) {
 	struct tm *timeInfo = localtime(timestamp);
-  char buf[6];
-  sprintf(buf, "%02d:%02d", timeInfo->tm_hour, timeInfo->tm_min);
-  return String(buf);
+	char buf[6];
+	sprintf(buf, "%02d:%02d", timeInfo->tm_hour, timeInfo->tm_min);
+	return String(buf);
 }
 //--------------------------------------------------------------------------------//
 void Recordtempj(){
-	// Enregistre file SPIFF data du jour
+	/* Enregistre file SPIFF data du jour */
 	File f = SPIFFS.open(FileDataJour, "w");
-		f.println(tempj.tempmin);
-		f.println(tempj.tempmax);
-    f.close();  //Close file
+	f.println(tempj.tempmin);
+	f.println(tempj.tempmax);
+	f.close();  //Close file
 }
 //--------------------------------------------------------------------------------//
 void updateMinMax(){
@@ -1523,26 +1446,26 @@ void updateMinMax(){
 //--------------------------------------------------------------------------------//
 void updateTime(){
 	drawProgress(10, "Maj Heure");
-  configTime(UTC_OFFSET * 3600, 0, NTP_SERVERS);
-  while(!time(nullptr)) {
-    Serial.print("#");
-    delay(100);
-  }
-  // calculate for time calculation how much the dst class adds.
-  dstOffset = UTC_OFFSET * 3600 + dstAdjusted.time(nullptr) - time(nullptr);
-  // Serial.printf("Time difference for DST: %d\n", dstOffset);
+	configTime(UTC_OFFSET * 3600, 0, NTP_SERVERS);
+	while(!time(nullptr)) {
+		Serial.print("#");
+		delay(100);
+	}
+	// calculate for time calculation how much the dst class adds.
+	dstOffset = UTC_OFFSET * 3600 + dstAdjusted.time(nullptr) - time(nullptr);
+	// Serial.printf("Time difference for DST: %d\n", dstOffset);
 }
 //--------------------------------------------------------------------------------//
 void updateForecast(){
-  drawProgress(70, "Maj previsions...");
-  OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
-  forecastClient->setMetric(IS_METRIC);
-  forecastClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
-  uint8_t allowedHours[] = {12, 0};
-  forecastClient->setAllowedHours(allowedHours, sizeof(allowedHours));
-  forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],ville[0][config.city], MAX_FORECASTS);
-  delete forecastClient;
-  forecastClient = nullptr;
+	drawProgress(70, "Maj previsions...");
+	OpenWeatherMapForecast *forecastClient = new OpenWeatherMapForecast();
+	forecastClient->setMetric(IS_METRIC);
+	forecastClient->setLanguage(OPEN_WEATHER_MAP_LANGUAGE);
+	uint8_t allowedHours[] = {12, 0};
+	forecastClient->setAllowedHours(allowedHours, sizeof(allowedHours));
+	forecastClient->updateForecastsById(forecasts, Openweathermap_key[API_KEY_Nbr],ville[0][config.city], MAX_FORECASTS);
+	delete forecastClient;
+	forecastClient = nullptr;
 }
 //--------------------------------------------------------------------------------//
 void drawLabelValue(uint8_t line, String label, String value) {
@@ -1557,15 +1480,14 @@ void drawLabelValue(uint8_t line, String label, String value) {
 //--------------------------------------------------------------------------------//
 void loadFileSpiffs(){ // verification fichiers en SPIFFS et telechargement si absent
 	/* temps de chargement si tout vide = 2mn30
-		si existe = 0.6s */
-	
+		si existe = 0.06s */
+
 	if(SPIFFS.exists(FileChk)){// verification du fichier de verification
 		File f = SPIFFS.open(FileChk, "r");
 		long s = f.readStringUntil('\n').toInt();
 		Serial.print(F("Size lu fichier = ")),Serial.println(s);
 		Serial.print(F("Size lu en mem  = ")),Serial.println(FileSize);
-		if(s == FileSize){
-			
+		if(s == FileSize){			
 			Serial.println(F("Fichiers SPIFFS existant"));
 			f.close();
 			return; // fichier OK retour sans rien faire
@@ -1577,13 +1499,13 @@ void loadFileSpiffs(){ // verification fichiers en SPIFFS et telechargement si a
 		Serial.println(F("Fichiers SPIFFS absent"));
 		SPIFFS.format();
 	}
-	
+
 	String url = F("http://");
 	url += wwwmonSitelocal;
 	url += "/iconemeteo";
 	static long size = 0; // size cumulé des fichiers pour verification
 	String filename = "";
-	
+
 	for(int i = 0; i < 17 ; i++){ // icones system
 		size += downloadFile(url,"/" + IconSystem[i] + extBmp);
 	}
@@ -1601,16 +1523,11 @@ void loadFileSpiffs(){ // verification fichiers en SPIFFS et telechargement si a
 	File f = SPIFFS.open(FileChk, "w");// création du fichier de verification
 	f.println(size);
 	f.close();
-	
 }
 
 //--------------------------------------------------------------------------------//
 long downloadFile(String url, String filename){
-	// Serial.print("url  :"),Serial.println(url);
-	// Serial.print("file :"),Serial.println(filename);
-	// Serial.print("exist"),Serial.println(SPIFFS.exists(filename));
-	// SPIFFS.remove(filename);
-	// Serial.print("exist"),Serial.println(SPIFFS.exists(filename));
+
 	long lenSPIFFS = 0;
 	
 	if (SPIFFS.exists(filename) == true) {
