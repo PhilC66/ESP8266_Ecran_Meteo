@@ -50,13 +50,15 @@ il ne faut pas prendre dernier " ou dernier :
 // il faut progresser dans les datas jusqu'a la fin
 ou utiliser JSON decode
 
+trouver caracteres >127
+
 -------------------------------------------------------------*/
 /*
 V100 18/11/2018 Migration Wunderground vers Weathermap
 */
 
-#include <Arduino.h>                // mes données personnelles
-#include <credentials_home.h>
+#include <Arduino.h>
+#include <credentials_home.h>       // mes données personnelles
 #include <Adafruit_GFX.h>           // Core graphics library
 #include <Adafruit_ILI9341.h>       // Hardware-specific library
 #include <SPI.h>
