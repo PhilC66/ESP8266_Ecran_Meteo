@@ -26,8 +26,8 @@ See more at http://blog.squix.ch , https://thingpulse.com
 3		RX
 4		Back Light
 5		SD Card detect ou IRQ touch
-12	MISO
-13	MOSI
+12  MISO
+13  MOSI
 14	SCK
 15 	TFT DC
 16	RT CS Touch Screen
@@ -108,16 +108,16 @@ float   humid;
 float   pression;
 float   rain1h;
 float   rain24h;
-int			derpluie;			// nbr de jour depuis derniere pluie
+int     derpluie;			// nbr de jour depuis derniere pluie
 float   der24h;				// pluie ce dernier jour de pluie
 float   pluie7j;
 float   pluie30j;
 float   pluiemax;
-boolean last;					// 1 si >1 heure depuis dernier enregistrement dans la table
-float 	vbatt;				// batterie de la station
+bool    last;					// 1 si >1 heure depuis dernier enregistrement dans la table
+float   vbatt;				// batterie de la station
 float   rssi;
 String  ssid;
-int 		versoft;
+int     versoft;
 String  derjour;
 } maMeteo;						//	données ma station meteo
 
