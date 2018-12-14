@@ -188,11 +188,11 @@ WiFiClient client;
 void setup() {
 	pinMode(Op_BackLight, OUTPUT);
 	analogWrite(Op_BackLight,1023);// Backlight ON
-  Serial.begin(115200);
+	Serial.begin(115200);
 
-  if (! spitouch.begin()) {
-    Serial.println(F("STMPE not found?"));
-  }
+	if (! spitouch.begin()) {
+		Serial.println(F("STMPE not found?"));
+	}
 	// lecture EEPROM
 	byte defaultmagic = 121;
 	EEPROM.begin(512);
@@ -218,31 +218,31 @@ void setup() {
 	else if(config.city == 3 || config.city == 4){
 		API_KEY_Nbr = 2;
 	}
-	
-  tft.begin();
-  tft.fillScreen(ILI9341_BLACK);
-  tft.setFont(&ArialRoundedMTBold_14);
-  ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
-  ui.setTextAlignment(CENTER);
-  ui.drawString(120, 160, "Connexion WiFi");
+
+	tft.begin();
+	tft.fillScreen(ILI9341_BLACK);
+	tft.setFont(&ArialRoundedMTBold_14);
+	ui.setTextColor(ILI9341_CYAN, ILI9341_BLACK);
+	ui.setTextAlignment(CENTER);
+	ui.drawString(120, 160, "Connexion WiFi");
 
 	/* WiFiManager */
 	WiFiManager wifiManager;
-  /* Uncomment for testing wifi manager */
-  // wifiManager.resetSettings();
-  wifiManager.setAPCallback(configModeCallback);
+	/* Uncomment for testing wifi manager */
+	// wifiManager.resetSettings();
+	wifiManager.setAPCallback(configModeCallback);
 
-  /* or use this for auto generated name ESP + ChipID */
-  if(!wifiManager.autoConnect()){
-    Serial.println(F("failed to connect and hit timeout"));
+	/* or use this for auto generated name ESP + ChipID */
+	if(!wifiManager.autoConnect()){
+		Serial.println(F("failed to connect and hit timeout"));
 		ui.drawString(120, 180, "Impossible de se connecter");
 		delay(1000);
-    //reset and try again, or maybe put it to deep sleep
-    ESP.reset();
-    delay(1000);
-  } 
-	
-  /* Manual Wifi */
+		//reset and try again, or maybe put it to deep sleep
+		ESP.reset();
+		delay(1000);
+	} 
+
+	/* Manual Wifi */
 	//WiFi.begin(mySSID, myPASSWORD);
 	// while(WiFi.status() != WL_CONNECTED){
 		// Serial.print(".");
@@ -250,37 +250,37 @@ void setup() {
 	// }
 	// Serial.println();
 	//WiFi.printDiag(Serial);
-	
+
 	Serial.print(F("connecté : ")), Serial.print(WiFi.SSID());
 	ui.drawString(120, 180, "Connecte");
 	String temp = String(WiFi.SSID());
 	ui.drawString(120, 200, temp);
 	delay(1000);
 
-  // OTA Setup
-  String hostname(HOSTNAME);
-  // hostname += String(ESP.getChipId(), HEX);
-  WiFi.hostname(hostname);
-  ArduinoOTA.setHostname((const char *)hostname.c_str());
-  ArduinoOTA.begin();
-  SPIFFS.begin();
-	
+	// OTA Setup
+	String hostname(HOSTNAME);
+	// hostname += String(ESP.getChipId(), HEX);
+	WiFi.hostname(hostname);
+	ArduinoOTA.setHostname((const char *)hostname.c_str());
+	ArduinoOTA.begin();
+	SPIFFS.begin();
+
 	/* Uncomment if you want to update all internet resources */
-  //SPIFFS.format();
+	//SPIFFS.format();
 	loadFileSpiffs(); // verification et chargement fichiers icones
-	
-  updateTime();
+
+	updateTime();
 	updateData();
 	updateForecast();
-	
+
 		/* SPIFFS.remove(FileDataJour);
 		File f = SPIFFS.open(FileDataJour, "w");
 		float s1 = -10.5;
 		float s2 = +30.2;
 		f.println(s1);
 		f.println(s2);
-    f.close();  //Close file */
-	
+		f.close();  //Close file */
+
 	if(SPIFFS.exists(FileDataJour)){ // Lecture fichier data jour
 		File f = SPIFFS.open(FileDataJour, "r");  
 		// Serial.print("Reading Data from File:"),Serial.println(f.size());
@@ -302,8 +302,8 @@ void setup() {
 	updateMinMax();
 	Serial.print(F("Temp min =")),Serial.println(tempj.tempmin);
 	Serial.print(F("Temp max =")),Serial.println(tempj.tempmax);
-	
-	
+
+
 	MesureBatterie();
 	MajSoft();	// verification si maj soft disponible
 	draw_ecran0();
@@ -315,9 +315,9 @@ void loop() {
 	static boolean flaglancemeteo = true;
 	// static byte n   = 0;
 	char *dstAbbrev;
-  time_t now = dstAdjusted.time(&dstAbbrev);
-  struct tm * timeinfo = localtime (&now);
-	
+	time_t now = dstAdjusted.time(&dstAbbrev);
+	struct tm * timeinfo = localtime (&now);
+
 	if (!spitouch.bufferEmpty()){				// si ecran touché
 		analogWrite(Op_BackLight,1023);		// Backlight ON
 		TS_Point p = spitouch.getPoint(); // recupere les coordonnées
@@ -434,15 +434,15 @@ void MesureBatterie(){
 //--------------------------------------------------------------------------------//
 void configModeCallback (WiFiManager *myWiFiManager) {
 	/* Called if WiFi has not been configured yet */
-  ui.setTextAlignment(CENTER);
-  tft.setFont(&ArialRoundedMTBold_14);
-  tft.setTextColor(ILI9341_CYAN);
-  ui.drawString(120, 28, "Gestion Wifi"); // "Wifi Manager"
-  ui.drawString(120, 42, "Se connecter a "); // "Please connect to AP"
-  tft.setTextColor(ILI9341_WHITE);
-  ui.drawString(120, 56, myWiFiManager->getConfigPortalSSID());
-  tft.setTextColor(ILI9341_CYAN);
-  ui.drawString(120, 70, "Acceder a la page de configuration"); // "To setup Wifi Configuration"
+	ui.setTextAlignment(CENTER);
+	tft.setFont(&ArialRoundedMTBold_14);
+	tft.setTextColor(ILI9341_CYAN);
+	ui.drawString(120, 28, "Gestion Wifi"); // "Wifi Manager"
+	ui.drawString(120, 42, "Se connecter a "); // "Please connect to AP"
+	tft.setTextColor(ILI9341_WHITE);
+	ui.drawString(120, 56, myWiFiManager->getConfigPortalSSID());
+	tft.setTextColor(ILI9341_CYAN);
+	ui.drawString(120, 70, "Acceder a la page de configuration"); // "To setup Wifi Configuration"
 	ui.drawString(120, 84, "192.168.4.1");
 }
 //--------------------------------------------------------------------------------//
