@@ -233,7 +233,14 @@ void setup() {
   wifiManager.setAPCallback(configModeCallback);
 
   /* or use this for auto generated name ESP + ChipID */
-  wifiManager.autoConnect();
+  if(!wifiManager.autoConnect()){
+    Serial.println(F("failed to connect and hit timeout"));
+		ui.drawString(120, 180, "Impossible de se connecter");
+		delay(1000);
+    //reset and try again, or maybe put it to deep sleep
+    ESP.reset();
+    delay(1000);
+  } 
 	
   /* Manual Wifi */
 	//WiFi.begin(mySSID, myPASSWORD);
@@ -245,6 +252,7 @@ void setup() {
 	//WiFi.printDiag(Serial);
 	
 	Serial.print(F("connecté : ")), Serial.print(WiFi.SSID());
+	ui.drawString(120, 180, "Connecte");
 	String temp = String(WiFi.SSID());
 	ui.drawString(120, 200, temp);
 	delay(1000);
@@ -429,12 +437,12 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   ui.setTextAlignment(CENTER);
   tft.setFont(&ArialRoundedMTBold_14);
   tft.setTextColor(ILI9341_CYAN);
-  ui.drawString(120, 28, "Wifi Manager");
-  ui.drawString(120, 42, "Please connect to AP");
+  ui.drawString(120, 28, "Gestion Wifi"); // "Wifi Manager"
+  ui.drawString(120, 42, "Se connecter a "); // "Please connect to AP"
   tft.setTextColor(ILI9341_WHITE);
   ui.drawString(120, 56, myWiFiManager->getConfigPortalSSID());
   tft.setTextColor(ILI9341_CYAN);
-  ui.drawString(120, 70, "To setup Wifi Configuration");
+  ui.drawString(120, 70, "Acceder a la page de configuration"); // "To setup Wifi Configuration"
 	ui.drawString(120, 84, "192.168.4.1");
 }
 //--------------------------------------------------------------------------------//
@@ -743,7 +751,6 @@ void drawAstronomy() {
   ui.drawString(20, 270, F("Soleil"));
   ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
   ui.drawString(20, 285, getTime(&timesunrise));
-	// sprintf(time_str, "%02d:%02d\n",timesunset->tm_hour, timesunset->tm_min);
   ui.drawString(20, 300, getTime(&timesunset));
 
   ui.setTextAlignment(RIGHT);
