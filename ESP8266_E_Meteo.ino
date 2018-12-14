@@ -36,6 +36,7 @@ See more at http://blog.squix.ch , https://thingpulse.com
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
+422172 40%, 43744 53%
 
 ----------------- ATTENTION -----------------
 		ne fonctionne pas avec les mise a jour récente
