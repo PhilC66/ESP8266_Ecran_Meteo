@@ -20,10 +20,10 @@ See more at http://blog.squix.ch , https://thingpulse.com
 
 /* 320x240 */
 /* Pin out de l'ESP8266
-0 	TFT CS
-1 	TX
-2 	SD card CS
-3 	RX
+0		TFT CS
+1		TX
+2		SD card CS
+3		RX
 4		Back Light
 5		SD Card detect ou IRQ touch
 12	MISO
@@ -108,7 +108,7 @@ float   humid;
 float   pression;
 float   rain1h;
 float   rain24h;
-int 	  derpluie;			// nbr de jour depuis derniere pluie
+int			derpluie;			// nbr de jour depuis derniere pluie
 float   der24h;				// pluie ce dernier jour de pluie
 float   pluie7j;
 float   pluie30j;
