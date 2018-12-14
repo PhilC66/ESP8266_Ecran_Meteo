@@ -266,8 +266,8 @@ void setup() {
 	loadFileSpiffs(); // verification et chargement fichiers icones
 
 	updateTime();
-	updateData();
 	updateForecast();
+	updateData();
 
 		/* SPIFFS.remove(FileDataJour);
 		File f = SPIFFS.open(FileDataJour, "w");
