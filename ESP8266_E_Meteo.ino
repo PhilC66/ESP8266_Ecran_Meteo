@@ -33,7 +33,7 @@ See more at http://blog.squix.ch , https://thingpulse.com
 16  RT CS Touch Screen
 */
 
-/* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoir */
+/* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
 
@@ -55,29 +55,29 @@ ou utiliser JSON decode
 V100 18/11/2018 Migration Wunderground vers Weathermap
 */
 
-#include <Arduino.h>
+#include <Arduino.h>                // mes données personnelles
 #include <credentials_home.h>
-#include <Adafruit_GFX.h>    				// Core graphics library
-#include <Adafruit_ILI9341.h> 			// Hardware-specific library
+#include <Adafruit_GFX.h>           // Core graphics library
+#include <Adafruit_ILI9341.h>       // Hardware-specific library
 #include <SPI.h>
-#include <Wire.h>  									// required even though we do not use I2C 
-#include "Adafruit_STMPE610.h"			// touch screen
-#include "GfxUi.h"									// Additional UI functions
-#include "ArialRoundedMTBold_14.h"	// Fonts created by http://oleddisplay.squix.ch/
+#include <Wire.h>                   // required even though we do not use I2C 
+#include "Adafruit_STMPE610.h"      // touch screen
+#include "GfxUi.h"                  // Additional UI functions
+#include "ArialRoundedMTBold_14.h"  // Fonts created by http://oleddisplay.squix.ch/
 #include "ArialRoundedMTBold_36.h"
 #include <ESP8266WiFi.h>
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h>						// Helps with connecting to internet// 
-#include <ESP8266httpUpdate.h>    	// Update Over The Air
-#include "settings.h"								// check settings.h for adapting to your needs
+#include <WiFiManager.h>            // Helps with connecting to Wifi
+#include <ESP8266httpUpdate.h>      // Update Over The Air
+#include "settings.h"               // check settings.h for adapting to your needs
 #include <JsonListener.h>
-#include <OpenWeatherMapCurrent.h>
-#include <OpenWeatherMapForecast.h>
-#include <Astronomy.h>
-#include <EEPROM.h>									// variable en EEPROM
+#include <OpenWeatherMapCurrent.h>  // données météo
+#include <OpenWeatherMapForecast.h> // données météo
+#include <Astronomy.h>              // calcul phase lune
+#include <EEPROM.h>                 // variable en EEPROM
 
 #define HOSTNAME "ESP_EcranMeteo"	// HOSTNAME for OTA update
 struct config_t								// configuration sauvée en EEPROM
@@ -122,8 +122,8 @@ String  derjour;
 
 byte API_KEY_Nbr;			// selection API_KEY selon ville
 
-struct tj {float tempmin; float tempmax;} tempj ;	// memorisation temp min/max du jour
-String FileDataJour = "/FileDataJour.txt";				// Fichier en SPIFF data du jour
+struct tj {float tempmin; float tempmax;} tempj ; // memorisation temp min/max du jour
+String FileDataJour = "/FileDataJour.txt";        // Fichier en SPIFF data du jour
 
 byte ecran          = 0; // ecran actif
 int  zone           = 0; // zone de l'ecran
@@ -300,7 +300,7 @@ void setup() {
 	MajSoft();	// verification si maj soft disponible
 	draw_ecran0();
 }
-//---------------------------------------------------------------------------
+//--------------------------------------------------------------------------------//
 void loop() {
 	static byte cpt = 0;	// compte nbr passage tous les 4 passages update previsions
 	static byte cptlancemeteo = 0;
@@ -372,17 +372,17 @@ void loop() {
 		MesureBatterie();	
 		if(JourNuit()){
 			Serial.println(F("Jour"));
-			analogWrite(Op_BackLight,1023);		// Backlight ON 1023
+			analogWrite(Op_BackLight,1023);    // Backlight ON 1023
 		}
 		else{
 			Serial.println(F("Nuit"));
-			analogWrite(Op_BackLight,50);			// Backlight OFF 50
+			analogWrite(Op_BackLight,50);      // Backlight OFF 50
 		}
 		if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
 			updateData();
 			updateMinMax();
 			flaglancemeteo = true;
-			if(cpt == 3){ // mise à jour Forecast seulement tous les 4 passages
+			if(cpt == 3){ // mise à jour Forecast seulement tous les 4 passages(1H)
 				updateForecast();
 				cpt = 0;
 			}else{
