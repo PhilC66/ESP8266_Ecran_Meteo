@@ -81,16 +81,17 @@ V100 18/11/2018 Migration Wunderground vers Weathermap
 #include <Astronomy.h>              // calcul phase lune
 #include <EEPROM.h>                 // variable en EEPROM
 
-#define HOSTNAME "ESP_EcranMeteo"	// HOSTNAME for OTA update
-struct config_t								// configuration sauvée en EEPROM
+#define HOSTNAME "ESP_EcranMeteo"  // HOSTNAME for OTA update
+struct config_t                    // configuration sauvée en EEPROM
 {
-	byte 		magic;							// num magique
-	byte 		city;								// numero ville
-	boolean UseMaMeteo;					// utilise data mameteo ou openweathermap false
+	byte 		magic;                   // num magique
+	byte 		city;                    // numero ville
+	boolean UseMaMeteo;              // utilise data mameteo ou openweathermap si false
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
 const int 	 ver  = 101;
+
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
 	{"          ","3014084" ,"3031848","3020035","2993728"  ,"2987914"  },
@@ -109,20 +110,20 @@ float   humid;
 float   pression;
 float   rain1h;
 float   rain24h;
-int     derpluie;			// nbr de jour depuis derniere pluie
-float   der24h;				// pluie ce dernier jour de pluie
+int     derpluie;     // nbr de jour depuis derniere pluie
+float   der24h;       // pluie ce dernier jour de pluie
 float   pluie7j;
 float   pluie30j;
 float   pluiemax;
-bool    last;					// 1 si >1 heure depuis dernier enregistrement dans la table
-float   vbatt;				// batterie de la station
+bool    last;         // 1 si >1 heure depuis dernier enregistrement dans la table
+float   vbatt;        // batterie de la station
 float   rssi;
 String  ssid;
 int     versoft;
 String  derjour;
-} maMeteo;						//	données ma station meteo
+} maMeteo;            //	données ma station meteo
 
-byte API_KEY_Nbr;			// selection API_KEY selon ville
+byte API_KEY_Nbr;     // selection API_KEY selon ville
 
 struct tj {float tempmin; float tempmax;} tempj ; // memorisation temp min/max du jour
 String FileDataJour = "/FileDataJour.txt";        // Fichier en SPIFF data du jour
