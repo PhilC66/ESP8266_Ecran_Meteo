@@ -16,6 +16,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 See more at http://blog.squix.ch
+
+
+lune dispo ici https://www.meteoblue.com/fr/meteo/prevision/semaine/hagetmau_france_3031848
+voir video 86 Andrea Spiess pour recuperer data
+
 */
 
 #include <simpleDSTadjust.h>
