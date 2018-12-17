@@ -36,7 +36,7 @@ See more at http://blog.squix.ch , https://thingpulse.com
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
-422172 40%, 43744 53%
+422068 40%, 43776 53%
 
 ----------------- ATTENTION -----------------
 		ne fonctionne pas avec les mise a jour récente
@@ -247,7 +247,7 @@ void setup() {
 	// Serial.println();
 	//WiFi.printDiag(Serial);
 
-	Serial.print(F("connecté : ")), Serial.print(WiFi.SSID());
+	Serial.print(F("connecté : ")), Serial.println(WiFi.SSID());
 	ui.drawString(120, 180, "Connecte");
 	String temp = String(WiFi.SSID());
 	ui.drawString(120, 200, temp);
@@ -309,6 +309,7 @@ void loop() {
 	static byte cpt = 0;	// compte nbr passage tous les 4 passages update previsions
 	static byte cptlancemeteo = 0;
 	static boolean flaglancemeteo = true;
+	static bool majdatajour = false;
 	// static byte n   = 0;
 	char *dstAbbrev;
 	time_t now = dstAdjusted.time(&dstAbbrev);
@@ -356,23 +357,27 @@ void loop() {
 		zone = 300;
 		GereEcran();
 	}
-	if(millis() - lastDrew > 10000 && String(timeinfo->tm_sec) == "0"){
+	if(millis() - lastDrew > 10000 && timeinfo->tm_sec == 0){
 		drawTime();
 		lastDrew = millis();
 		Serial.print(timeinfo->tm_hour),Serial.print(":"),Serial.print(timeinfo->tm_min),Serial.print(":"),Serial.println(timeinfo->tm_sec);
-		if(String(timeinfo-> tm_hour) == "3" && String(timeinfo-> tm_min) == String(MinMajSoft)){	
+		if(timeinfo-> tm_hour == 3 && timeinfo-> tm_min == MinMajSoft){	
 			// Majsoft entre 03h00 et 03h10
 			Serial.println(F("Mise a jour Soft"));
 			MajSoft();
 			updateTime();
 		}
-		if(String(timeinfo-> tm_hour) == "0" && String(timeinfo-> tm_min) == "0" && String(timeinfo-> tm_sec) == "0"){
+		if(timeinfo-> tm_hour == 0 && timeinfo-> tm_min == 0 && !majdatajour){//&& String(timeinfo-> tm_sec) == "0"
 			// Mise à jour des data du jour
 			tempj.tempmin = currentWeather.temp;
 			tempj.tempmax = currentWeather.temp;
-			Serial.println(F("record data jour 00H00"));
+			printf("%s %02d:%02d:%02d\n","record data jour",timeinfo->tm_hour, timeinfo->tm_min,timeinfo->tm_sec);
 			Recordtempj();
-		}			
+			draw_ecran0();
+			majdatajour = true;
+		}
+		if(timeinfo-> tm_hour == 0 && timeinfo-> tm_min == 1 ) majdatajour = false;
+		
 		MesureBatterie();	
 		if(JourNuit()){
 			Serial.println(F("Jour"));
