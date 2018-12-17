@@ -91,7 +91,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 101;
+const int 	 ver  = 102;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
