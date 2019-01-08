@@ -36,7 +36,7 @@ See more at http://blog.squix.ch , https://thingpulse.com
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
-422068 40%, 43776 53%
+422156 40%, 43840 53%
 
 ----------------- ATTENTION -----------------
 		ne fonctionne pas avec les mise a jour récente
@@ -91,7 +91,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 102;
+const int 	 ver  = 103;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
@@ -770,6 +770,8 @@ boolean JourNuit(){
 	
 	timesunrise -= 3600;	// marge 1 heure
 	timesunset  += 7200;	// marge 2 heures
+	if(timesunrise > 21600) timesunrise = 21600; // force jour à 6H00
+	if(timesunset  < 79200) timesunset  = 79200; // force nuit à 22H00
 	
 	if(timesunset > timesunrise){
 		if((now > timesunset && now > timesunrise)
