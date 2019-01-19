@@ -91,7 +91,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 103;
+const int 	 ver  = 104;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
@@ -772,6 +772,9 @@ boolean JourNuit(){
 	timesunset  += 7200;	// marge 2 heures
 	if(timesunrise > 21600) timesunrise = 21600; // force jour à 6H00
 	if(timesunset  < 79200) timesunset  = 79200; // force nuit à 22H00
+	
+	Serial.print(F("Sunrise :")),Serial.print(timesunrise);
+	Serial.print(F(" Sunset  :")),Serial.println(timesunset);
 	
 	if(timesunset > timesunrise){
 		if((now > timesunset && now > timesunrise)
