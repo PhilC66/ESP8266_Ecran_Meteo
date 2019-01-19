@@ -764,17 +764,33 @@ boolean JourNuit(){
 	
 	char *dstAbbrev;
 	time_t now = dstAdjusted.time(&dstAbbrev);
-	struct tm * timeinfo = localtime (&now);
+	struct tm *timeinfo = localtime (&now);
 	time_t timesunrise = currentWeather.sunrise + dstOffset;
 	time_t timesunset  = currentWeather.sunset  + dstOffset;
+
 	
-	timesunrise -= 3600;	// marge 1 heure
-	timesunset  += 7200;	// marge 2 heures
-	if(timesunrise > 21600) timesunrise = 21600; // force jour à 6H00
-	if(timesunset  < 79200) timesunset  = 79200; // force nuit à 22H00
+	struct tm *timeset  = localtime(&timesunset);
 	
-	Serial.print(F("Sunrise :")),Serial.print(timesunrise);
-	Serial.print(F(" Sunset  :")),Serial.println(timesunset);
+	if(timeset->tm_hour < 22 && timeset->tm_min >= 0){ // forcer nuit à 22H00
+		int diff = (22 - 1 - timeset->tm_hour) *60*60;
+		diff    += (60-(timeset->tm_min)) *60;
+		Serial.println(diff);
+		timesunset += diff;
+	}
+	
+	struct tm *timerise = localtime(&timesunrise);
+	
+	if(timerise->tm_hour > 6){ // forcer 6H00
+		int diff = (timerise->tm_hour - 6) *60*60;
+		Serial.println(diff);
+		diff    += (timerise->tm_min) *60;
+		Serial.println(diff);
+		timesunrise -= diff;
+	}
+	
+	// Serial.print(F("tnow :")),Serial.print(now);
+	// Serial.print(F(" Sunrise :")),Serial.print(timesunrise);
+	// Serial.print(F(" Sunset  :")),Serial.println(timesunset);
 	
 	if(timesunset > timesunrise){
 		if((now > timesunset && now > timesunrise)
