@@ -360,7 +360,7 @@ void loop() {
 	if(millis() - lastDrew > 10000 && timeinfo->tm_sec == 0){
 		drawTime();
 		lastDrew = millis();
-		Serial.print(timeinfo->tm_hour),Serial.print(":"),Serial.print(timeinfo->tm_min),Serial.print(":"),Serial.println(timeinfo->tm_sec);
+		printf("%02d:%02d:%02d\r\n",timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
 		if(timeinfo-> tm_hour == 3 && timeinfo-> tm_min == MinMajSoft){	
 			// Majsoft entre 03h00 et 03h10
 			Serial.println(F("Mise a jour Soft"));
@@ -371,7 +371,7 @@ void loop() {
 			// Mise à jour des data du jour
 			tempj.tempmin = currentWeather.temp;
 			tempj.tempmax = currentWeather.temp;
-			printf("%s %02d:%02d:%02d\n","record data jour",timeinfo->tm_hour, timeinfo->tm_min,timeinfo->tm_sec);
+			// printf("%s %02d:%02d:%02d\n","record data jour",timeinfo->tm_hour, timeinfo->tm_min,timeinfo->tm_sec);
 			Recordtempj();
 			draw_ecran0();
 			majdatajour = true;
@@ -525,7 +525,7 @@ void drawTime() { // draws the clock
 	tft.setFont(&ArialRoundedMTBold_36);
 	sprintf(time_str, "%02d:%02d\n",timeinfo->tm_hour, timeinfo->tm_min);
 	ui.drawString(120, 56, time_str);
-	Serial.println(time_str);
+	// Serial.println(time_str);
 	ui.setTextAlignment(RIGHT);
 	ui.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 	tft.setFont(&ArialRoundedMTBold_14);
@@ -767,24 +767,20 @@ boolean JourNuit(){
 	struct tm *timeinfo = localtime (&now);
 	time_t timesunrise = currentWeather.sunrise + dstOffset;
 	time_t timesunset  = currentWeather.sunset  + dstOffset;
-
 	
-	struct tm *timeset  = localtime(&timesunset);
+	struct tm *timeset  = localtime(&timesunset); // ne pas regrouper ces 2 lignes
 	
 	if(timeset->tm_hour < 22 && timeset->tm_min >= 0){ // forcer nuit à 22H00
 		int diff = (22 - 1 - timeset->tm_hour) *60*60;
 		diff    += (60-(timeset->tm_min)) *60;
-		Serial.println(diff);
 		timesunset += diff;
 	}
 	
-	struct tm *timerise = localtime(&timesunrise);
+	struct tm *timerise = localtime(&timesunrise); // ne pas regrouper ces 2 lignes
 	
 	if(timerise->tm_hour > 6){ // forcer 6H00
 		int diff = (timerise->tm_hour - 6) *60*60;
-		Serial.println(diff);
 		diff    += (timerise->tm_min) *60;
-		Serial.println(diff);
 		timesunrise -= diff;
 	}
 	
@@ -1579,7 +1575,7 @@ long downloadFile(String url, String filename){
 		int httpCode = http.GET();
 		if(httpCode > 0) {
 			// HTTP header has been send and Server response header has been handled
-			Serial.printf("[HTTP] GET... code: %d\n", httpCode);
+			Serial.printf("[HTTP] GET... code: %d\r\n", httpCode);
 			
 			File f = SPIFFS.open(filename, "w");//w+
 			if (!f) {
@@ -1628,7 +1624,7 @@ long downloadFile(String url, String filename){
 			// Serial.print("exist size "),Serial.println(lenSPIFFS);
 			f.close();
 		} else {
-			Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+			Serial.printf("[HTTP] GET... failed, error: %s\r\n", http.errorToString(httpCode).c_str());
 		}
 		http.end();
 	}
