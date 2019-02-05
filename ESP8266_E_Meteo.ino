@@ -36,13 +36,13 @@ See more at http://blog.squix.ch , https://thingpulse.com
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
-422156 40%, 43840 53%
+444944 42%, 45008 54%
 
 ----------------- ATTENTION -----------------
 		ne fonctionne pas avec les mise a jour récente
 		version ci-dessous seulement
-		carte     esp8266 community V 2.3.0
-		librairie esp8266 wifimanager by tzapu V 0.12.0
+		carte     esp8266 community V 2.3.0 ; OK le 05/02/2019 avec V 2.4.0-rc2 derniere dispo
+		librairie esp8266 wifimanager by tzapu V 0.12.0; KO le 05/02/2019 avec V 0.14, OK avec V 0.13
 		
 ----------------- ATTENTION -----------------		
 ----------------------to do----------------------------------
