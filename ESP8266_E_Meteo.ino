@@ -53,6 +53,8 @@ ou utiliser JSON decode
 
 trouver caracteres >127
 
+si temp=0, h=0, p=0 erreur chargement current conditions, il faut recharger
+
 -------------------------------------------------------------*/
 /*
 V100 18/11/2018 Migration Wunderground vers Weathermap
@@ -91,7 +93,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 104;
+const int 	 ver  = 105;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille+1] ={
@@ -388,7 +390,17 @@ void loop() {
 			analogWrite(Op_BackLight,50);      // Backlight OFF 50
 		}
 		if (millis() - lastDownloadUpdate > 1000 * UPDATE_INTERVAL_SECS) {
-			updateData();
+			
+			int i = 0;
+			do{
+				updateData();
+				delay(500);
+				i ++;
+				if(i>10){
+					break;
+				}
+			}while(!(currentWeather.temp == 0 && currentWeather.sunrise == 0 && currentWeather.sunset == 0));
+			
 			updateMinMax();
 			flaglancemeteo = true;
 			if(cpt == 3){ // mise à jour Forecast seulement tous les 4 passages(1H)
@@ -674,7 +686,7 @@ void drawForecastDetail(uint16_t x, uint16_t y, uint8_t dayIndex) {
 		prevheure = "23";
 	}
 
-	ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,2) + " " + prevheure + ":00");//x+25 y-15
+	ui.drawString(x + 0, y - 15, WDAY_NAMES[timeinfo->tm_wday].substring(0,2) + " " + prevheure + "h");//x+25 y-15
 
 	// Temperature
 	ui.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
