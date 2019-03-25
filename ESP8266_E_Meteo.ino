@@ -36,7 +36,7 @@
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
 /* carte HUZZAH esp8266	4M(3M SPIFFS)
-  439344 42%, 39352 48%
+  439340 42%, 39348 48%
 
   ----------------- ATTENTION -----------------
 		ARDUINO IDE 1.8.8
@@ -93,12 +93,12 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 105;
+const int 	 ver  = 106;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille + 1] = {
-  {"          ", "3014084" , "3031848", "3020035", "2993728"  , "2987914"  },
-  {"          ", "Hagetmau", "Bompas" , "Epinal" , "Mirecourt", "Perpignan"},
+  {"          ", "3014084" , "3031848", "3020035", "3024066"  , "2987914"  },
+  {"          ", "Hagetmau", "Bompas" , "Epinal" , "Compiegne", "Perpignan"},
   {"0"         , "Labastide-Chalosse"       , "0"      , "0"      , "0"        , "0"}
 };// 0 Weathermap ID , 1 Nom Ville, 2 0 ou nom Station perso liée
 
