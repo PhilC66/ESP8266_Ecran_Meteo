@@ -35,8 +35,9 @@
 /* consommation 165mA/5V */
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
-/* carte HUZZAH esp8266	4M(3M SPIFFS)
-  439340 42%, 39348 48%
+/* ARDUINO IDE 1.8.9
+  carte HUZZAH esp8266	4M(3M SPIFFS)
+  439360 42%, 39336 48%
 
   ----------------- ATTENTION -----------------
 		ARDUINO IDE 1.8.8
@@ -93,7 +94,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 107;
+const int 	 ver  = 108;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille + 1] = {
@@ -827,6 +828,7 @@ void Mameteo() { // lecture data ma meteo, valide si reponse
   String data = "getmeteo=r";
   String tempo = "Host:";
   tempo += monSite;
+  Serial.println(tempo);
   if (client.connect(monSite, 80)) {
     client.println("POST /meteo/synthese.php HTTP/1.1");
     client.println (tempo);          // SERVER ADDRESS HERE TOO
@@ -844,6 +846,7 @@ void Mameteo() { // lecture data ma meteo, valide si reponse
     Serial.print(F("Reponse serveur :")), Serial.println(req);
     if (req.length() == 0) { // si pas de reponse
       config.UseMaMeteo = false;
+      Serial.println(F("pas de reponse"));
       return;
     }
     //Serial.println(req.length());
