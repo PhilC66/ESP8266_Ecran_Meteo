@@ -94,7 +94,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 108;
+const int 	 ver  = 109;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille + 1] = {
@@ -400,10 +400,11 @@ void loop() {
         updateData();
         delay(500);
         i ++;
-        if (i > 10) {
+        if (i > 9) {
           break;
         }
-      } while (!(currentWeather.temp == 0 && currentWeather.sunrise == 0 && currentWeather.sunset == 0));
+        // Serial.print("currtemp:"),Serial.print(currentWeather.temp),Serial.print(" sunrise:"),Serial.print(currentWeather.sunrise),Serial.print(" sunset:"),Serial.println(currentWeather.sunset);
+      } while (currentWeather.temp == 0 && currentWeather.sunrise == 0 && currentWeather.sunset == 0);
 
       updateMinMax();
       flaglancemeteo = true;
