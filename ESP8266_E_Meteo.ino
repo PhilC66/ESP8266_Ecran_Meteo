@@ -37,7 +37,7 @@
 
 /* ARDUINO IDE 1.8.9
   carte HUZZAH esp8266	4M(3M SPIFFS)
-  439360 42%, 39336 48%
+  439408 42%, 39336 48%
 
   ----------------- ATTENTION -----------------
 		ARDUINO IDE 1.8.8
@@ -94,7 +94,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 109;
+const int 	 ver  = 110;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille + 1] = {
@@ -140,7 +140,7 @@ int  zone           = 0; // zone de l'ecran
 byte frcst          = 0; // compteur forecast affiché
 byte nbrecran       = 4; // nombre ecran existant
 byte MinMajSoft     = 0; // minute de verification mise à jour soft
-
+bool FlagMajSoft    = false; // Flag demande de mise à jour
 long lastDownloadUpdate = millis();
 long lastDrew           = millis();
 long lastRotation       = millis();
@@ -308,6 +308,7 @@ void setup() {
 
   MesureBatterie();
   MajSoft();	// verification si maj soft disponible
+  FlagMajSoft = false;
   draw_ecran0();
 }
 //--------------------------------------------------------------------------------//
@@ -367,11 +368,13 @@ void loop() {
     drawTime();
     lastDrew = millis();
     printf("%02d:%02d:%02d\r\n", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-    if (timeinfo-> tm_hour == 3 && timeinfo-> tm_min == MinMajSoft) {
+    if (timeinfo-> tm_hour == 3 && timeinfo-> tm_min == MinMajSoft && FlagMajSoft == false) {
       // Majsoft entre 03h00 et 03h10
       Serial.println(F("Mise a jour Soft"));
       MajSoft();
       updateTime();
+    }else if(timeinfo-> tm_hour == 3 && timeinfo-> tm_min > MinMajSoft && FlagMajSoft == true){
+      FlagMajSoft = false;
     }
     if (timeinfo-> tm_hour == 0 && timeinfo-> tm_min == 0 && !majdatajour) { //&& String(timeinfo-> tm_sec) == "0"
       // Mise à jour des data du jour
@@ -1432,6 +1435,7 @@ void draw_ecran(byte i) {
 //----------------------------------------------------------------------------------------------//
 void MajSoft() {
   /* cherche si mise à jour dispo et maj */
+  FlagMajSoft = true;
   drawProgress(100, F("Verif Mise a jour soft"));
   String Fichier = "http://";
   Fichier += monSite;
