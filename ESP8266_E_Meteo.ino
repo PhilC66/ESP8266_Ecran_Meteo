@@ -94,7 +94,7 @@ struct config_t                    // configuration sauvée en EEPROM
 } config;
 
 const String soft = "ESP8266_E_Meteo.ino.adafruit"; 	// nom du soft
-const int 	 ver  = 110;
+const int 	 ver  = 111;
 
 const byte nbrVille	= 5;
 String ville[3][nbrVille + 1] = {
@@ -307,7 +307,7 @@ void setup() {
 
 
   MesureBatterie();
-  MajSoft();	// verification si maj soft disponible
+  // MajSoft();	// verification si maj soft disponible
   FlagMajSoft = false;
   draw_ecran0();
 }
