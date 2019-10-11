@@ -35,9 +35,11 @@
 /* consommation 165mA/5V */
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
-/* ARDUINO IDE 1.8.9
+/* 11/20/2019
+  ARDUINO IDE 1.8.10, ESP8266 2.5.2
   carte HUZZAH esp8266	4M(3M SPIFFS)
-  439408 42%, 39336 48%
+  PC 443768 42%, 38540 47%
+  Raspi 443028 42%, 38540 47%
 
   ----------------- ATTENTION -----------------
 		ARDUINO IDE 1.8.8
