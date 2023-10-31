@@ -35,7 +35,14 @@
 /* consommation 165mA/5V */
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
-/* 11/20/2019
+/* 
+  31/10/2023
+  ARDUINO IDE 1.8.19, ESP8266 2.5.0
+  compil ok
+  fonctionne OK
+  PC 440372 42%, 39556 47%
+
+  11/20/2019
   ARDUINO IDE 1.8.10, ESP8266 2.5.2
   carte HUZZAH esp8266	4M(3M SPIFFS)
   PC 443768 42%, 38540 47%
@@ -65,8 +72,8 @@
 
 #include <Arduino.h>
 #include <credentials_home.h>       // mes données personnelles
-#include <Adafruit_GFX.h>           // Core graphics library
-#include <Adafruit_ILI9341.h>       // Hardware-specific library
+#include <Adafruit_GFX.h>           // Core graphics library V 1.3.6
+#include <Adafruit_ILI9341.h>       // Hardware-specific library V 1.2.0
 #include <SPI.h>
 #include <Wire.h>                   // required even though we do not use I2C 
 #include "Adafruit_STMPE610.h"      // touch screen
@@ -91,7 +98,7 @@
 struct config_t                    // configuration sauvée en EEPROM
 {
   byte 		magic;                   // num magique
-  byte 		city;                    // numero ville
+  byte 		city;                    // numero 
   boolean UseMaMeteo;              // utilise data mameteo ou openweathermap si false
 } config;
 
@@ -230,7 +237,7 @@ void setup() {
   ui.setTextAlignment(CENTER);
   ui.drawString(120, 160, "Connexion WiFi");
 
-  /* WiFiManager */
+  // /* WiFiManager */
   WiFiManager wifiManager;
   /* Uncomment for testing wifi manager */
   // wifiManager.resetSettings();
@@ -247,13 +254,15 @@ void setup() {
   }
 
   /* Manual Wifi */
-  //WiFi.begin(mySSID, myPASSWORD);
+  // WiFi.begin("AndroidAP", "ciwt8288");
+  // WiFi.begin(mySSID, myPASSWORD);
+  // Serial.println(WiFi.SSID());
   // while(WiFi.status() != WL_CONNECTED){
   // Serial.print(".");
   // delay(1000);
   // }
-  // Serial.println();
-  //WiFi.printDiag(Serial);
+  Serial.println();
+  WiFi.printDiag(Serial);
 
   Serial.print(F("connecté : ")), Serial.println(WiFi.SSID());
   ui.drawString(120, 180, "Connecte");
@@ -268,11 +277,11 @@ void setup() {
   ArduinoOTA.setHostname((const char *)hostname.c_str());
   ArduinoOTA.begin();
   SPIFFS.begin();
-
+  // listdir();
   /* Uncomment if you want to update all internet resources */
   //SPIFFS.format();
   loadFileSpiffs(); // verification et chargement fichiers icones
-
+  listdir();
   updateTime();
   updateForecast();
   updateData();
@@ -1558,7 +1567,7 @@ void loadFileSpiffs() { // verification fichiers en SPIFFS et telechargement si 
   url += "/iconemeteo";
   static long size = 0; // size cumulé des fichiers pour verification
   String filename = "";
-
+  Serial.print("url:"),Serial.println(url);
   for (int i = 0; i < 17 ; i++) { // icones system
     size += downloadFile(url, "/" + IconSystem[i] + extBmp);
   }
@@ -1574,7 +1583,7 @@ void loadFileSpiffs() { // verification fichiers en SPIFFS et telechargement si 
   }
   Serial.print(F("Size Cumul = ")), Serial.println(size);
   File f = SPIFFS.open(FileChk, "w");// création du fichier de verification
-  f.println(size);
+  Serial.print("filechk write:"),Serial.println(f.println(size));
   f.close();
 }
 
@@ -1655,5 +1664,20 @@ long downloadFile(String url, String filename) {
     }
     http.end();
   }
+  Serial.print("len:"),Serial.println(lenSPIFFS);
   return lenSPIFFS;
+}
+//--------------------------------------------------------------------------------/
+void listdir(){
+  if (!SPIFFS.begin ()) {
+    Serial.println ("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+
+  Dir dir = SPIFFS.openDir ("");
+  while (dir.next ()) {
+    Serial.print (dir.fileName ());
+    Serial.print (" : ");
+    Serial.println (dir.fileSize ());
+  }
 }

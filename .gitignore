@@ -1,3 +1,5 @@
 session
 version.txt
 ESP8266_E_Meteo.ino.adafruit.bin
+/build
+/.vscode
