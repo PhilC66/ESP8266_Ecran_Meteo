@@ -35,7 +35,11 @@
 /* consommation 165mA/5V */
 /* recherche mise a jour soft à 03hmm sur site perso, à mm aléatoire */
 
-/* 
+/* 31/10/2023  
+  Wifimanager timeout et retry
+  ARDUINO IDE 1.8.19, ESP8266 2.5.2
+  PC 477588 45%, 35700 43%
+
   31/10/2023
   ARDUINO IDE 1.8.19, ESP8266 2.5.2
   compil ok
@@ -242,6 +246,8 @@ void setup() {
   /* Uncomment for testing wifi manager */
   // wifiManager.resetSettings();
   wifiManager.setAPCallback(configModeCallback);
+	wifiManager.setConfigPortalTimeout(120); // sets timeout before AP,webserver loop ends and exits
+  wifiManager.setConnectRetries(10);       // sets number of retries for autoconnect
 
   /* or use this for auto generated name ESP + ChipID */
   if (!wifiManager.autoConnect()) {
